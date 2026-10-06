@@ -7,3 +7,5 @@ sources/*.pdf
 sources/*.txt
 sources/ordinances/
 .env
+data/baselines/
+results/*.json
