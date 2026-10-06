@@ -49,6 +49,8 @@ class DecisionScore:
     false_restrictions: int
     handed_to_supervisor: int
     minutes_lost_to_caution: int
+    minutes_over_truth: int = 0
+    minutes_under_truth: int = 0
 
     @property
     def miss_rate(self) -> float:
@@ -59,22 +61,36 @@ class DecisionScore:
         return self.handed_to_supervisor / self.hours if self.hours else 0.0
 
 
-def decision_score(members_by_hour, truth_by_hour, workload: str, acclimatized: bool) -> DecisionScore:
+def decision_score(
+    members_by_hour,
+    truth_by_hour,
+    workload: str,
+    acclimatized: bool,
+    plan_quantile: float = 1.0,
+    handover_steps: int = 1,
+) -> DecisionScore:
     """Compare per-hour plans from forecast members against plans from the truth.
 
     A "restricted" hour is one where the truth allows fewer than 60 work minutes
     at the cautious end. A miss is a restricted hour the forecast planned as more
     work than the truth allows, which is the error that hurts someone. An
     undetermined hour is scored on its cautious value, the value the plan uses.
+
+    Minutes over truth are the danger: work planned that the truth did not allow.
+    Minutes under truth are the cost of caution: work the truth allowed that the
+    plan withheld.
     """
-    hours = restricted = caught = missed = false_r = handed = lost = 0
+    hours = restricted = caught = missed = false_r = handed = lost = over = under = 0
     for members, truth in zip(members_by_hour, truth_by_hour):
         if not np.all(np.isfinite(members)) or not np.isfinite(truth):
             continue
         hours += 1
-        f = plan_hour("", members, workload, acclimatized)
+        f = plan_hour("", members, workload, acclimatized, plan_quantile=plan_quantile,
+                      handover_steps=handover_steps)
         t = plan_hour("", [truth], workload, acclimatized)
         truth_minutes = t.minutes
+        over += max(0, f.minutes - truth_minutes)
+        under += max(0, truth_minutes - f.minutes)
         if f.outcome is Outcome.UNDETERMINED:
             handed += 1
             lost += max(0, truth_minutes - f.minutes)
@@ -86,4 +102,4 @@ def decision_score(members_by_hour, truth_by_hour, workload: str, acclimatized: 
                 missed += 1
         elif f.minutes < 60:
             false_r += 1
-    return DecisionScore(hours, restricted, caught, missed, false_r, handed, lost)
+    return DecisionScore(hours, restricted, caught, missed, false_r, handed, lost, over, under)

@@ -69,6 +69,8 @@ def plan_hour(
     banned_minutes: int = 0,
     ban_reason: str | None = None,
     ban_uncertain: bool = False,
+    plan_quantile: float = 1.0,
+    handover_steps: int = 1,
 ) -> HourPlan:
     """Decide one hour.
 
@@ -76,6 +78,12 @@ def plan_hour(
     12:00 hour of a 12:30 ban). `ban_uncertain` means a ban could apply but
     something only a person can confirm is missing: the plan then assumes the ban,
     the cautious value, and hands the hour over with `ban_reason`.
+
+    `plan_quantile` picks which ensemble member the plan follows: 1.0 is the
+    hottest member, 0.9 the member hotter than nine in ten. `handover_steps` is
+    how far apart, in 15-minute work steps, the members' answers must be before
+    the hour goes to a person. The defaults (hottest member, any disagreement)
+    are the most cautious; the values Turno ships are fixed in rules.py.
     """
     if isinstance(workload, str):
         workload = WORKLOADS[workload]
@@ -87,33 +95,34 @@ def plan_hour(
         return HourPlan(hour_local, Outcome.BANNED, 0, (0, 0), members, (ban_reason or "Banned by ordinance.",))
 
     bands = [minutes_band(w, workload, acclimatized) for w in members]
-    fewest = min(b.fewest for b in bands)
-    most = max(b.most for b in bands)
     cap = 60 - max(0, min(60, banned_minutes))
+    planned_wbgt = float(np.quantile(np.asarray(members), plan_quantile))
+    planned_band = minutes_band(planned_wbgt, workload, acclimatized)
+    planned = min(planned_band.fewest, cap)
+    most = min(max(b.most for b in bands), cap)
+    member_minutes = [min(b.fewest, cap) for b in bands]
+    spread_steps = (max(member_minutes) - min(member_minutes)) // 15
 
     if ban_uncertain:
-        return HourPlan(hour_local, Outcome.UNDETERMINED, min(fewest, cap), (min(fewest, cap), most), members,
+        return HourPlan(hour_local, Outcome.UNDETERMINED, planned, (planned, most), members,
                         (ban_reason or "An ordinance may apply.",))
-
-    if cap < 60:
-        fewest, most = min(fewest, cap), min(most, cap)
 
     # The plan is always made for the hard end of the workload range: NIOSH puts
     # the error of a workload estimate as high as 30%, so the cautious end is the
     # safe reading, not a guess. The range is reported, not handed over. Only
-    # forecast members that disagree send the hour to a person, because that is
-    # uncertainty a supervisor can act on (look at the sky, call the site).
+    # forecast members that disagree by `handover_steps` or more send the hour to
+    # a person, because that is uncertainty a supervisor can act on.
     notes = [ban_reason] if cap < 60 and ban_reason else []
-    if any(not b.determined for b in bands):
+    if not planned_band.determined:
         notes.append(
             f"Planned for the hard end of {workload.label} ({workload.m_high_w:.0f} W); lighter work "
-            f"within the range ({workload.m_low_w:.0f} W) would allow up to {most} minutes."
+            f"within the range ({workload.m_low_w:.0f} W) would allow up to {min(planned_band.most, cap)} minutes."
         )
-    if len({b.fewest for b in bands}) == 1:
-        return HourPlan(hour_local, Outcome.WORK, fewest, (fewest, most), members, tuple(notes))
+    if spread_steps < handover_steps:
+        return HourPlan(hour_local, Outcome.WORK, planned, (planned, most), members, tuple(notes))
 
     reasons = notes + [
-        f"Forecast members disagree: WBGT from {min(members):.1f} to {max(members):.1f} C "
-        f"spans more than one work step."
+        f"Forecast members disagree: WBGT from {min(members):.1f} to {max(members):.1f} C, "
+        f"{spread_steps} work steps apart."
     ]
-    return HourPlan(hour_local, Outcome.UNDETERMINED, fewest, (fewest, most), members, tuple(reasons))
+    return HourPlan(hour_local, Outcome.UNDETERMINED, planned, (min(member_minutes), most), members, tuple(reasons))

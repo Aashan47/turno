@@ -35,6 +35,11 @@ from turno.wbgt import WbgtInputs, wbgt_c  # noqa: E402
 
 WINDOW_H = 3
 
+# Working hours, 07:00 to 19:00 Italian summer time (UTC+2). The 3-hourly valid
+# times inside it are 06, 09, 12 and 15 UTC, i.e. 08, 11, 14 and 17 local.
+# Every decision metric, including the hand-off rate, is over these times only.
+WORK_HOURS_UTC = {6, 9, 12, 15}
+
 
 def mean_over_window(fn, t_end: datetime, lat: float, lon: float) -> float:
     """Mean of an hourly-mean solar quantity over the WINDOW_H hours ending at t_end."""
@@ -86,15 +91,7 @@ def arm_members(fc: xr.Dataset, init: datetime, lat: float, lon: float) -> dict[
     return out
 
 
-def main(paths: list[str]) -> int:
-    era = sorted((ROOT / "data" / "era5").glob("era5_italy_2026*.nc"))
-    ds = xr.open_mfdataset(era, combine="by_coords")
-    if "valid_time" in ds.dims:
-        ds = ds.rename({"valid_time": "time"})
-    lsm = load_lsm(ROOT / "data" / "era5" / "era5_italy_lsm.nc")
-    cells = {s.key: nearest_land_cell(lsm, s.lat, s.lon)[:2] for s in SITES}
-    truth = {k: era5_truth(ds, *c) for k, c in cells.items()}
-
+def score_files(paths, truth, cells, plan_quantile: float, handover_steps: int) -> list[dict]:
     rows = []
     for p in paths:
         fc = xr.open_dataset(p)
@@ -104,20 +101,43 @@ def main(paths: list[str]) -> int:
             members = arm_members(fc, init, lat, lon)
             for lead in range(1, 6):
                 lo, hi = init + timedelta(days=lead - 1), init + timedelta(days=lead)
-                ts = [t for t in sorted(members) if lo < t <= hi and t in truth[key]]
+                ts = [t for t in sorted(members)
+                      if lo < t <= hi and t in truth[key] and t.hour in WORK_HOURS_UTC]
                 if not ts:
                     continue
                 med = [float(np.median(members[t])) for t in ts]
                 tr = [truth[key][t] for t in ts]
+                w = wbgt_score(med, tr)
                 for accl in (True, False):
-                    d = decision_score([members[t] for t in ts], tr, "heavy", accl)
-                    w = wbgt_score(med, tr)
+                    d = decision_score([members[t] for t in ts], tr, "heavy", accl,
+                                       plan_quantile=plan_quantile, handover_steps=handover_steps)
                     rows.append({"file": Path(p).name, "arm": arm, "init": init.date().isoformat(),
                                  "site": key, "lead_days": lead, "acclimatized": accl, "n": w.n,
                                  "mae_c": w.mae_c, "bias_c": w.bias_c,
                                  "restricted": d.restricted_truth, "missed": d.missed,
                                  "false_restrictions": d.false_restrictions,
-                                 "handed_over": d.handed_to_supervisor, "hours": d.hours})
+                                 "handed_over": d.handed_to_supervisor, "hours": d.hours,
+                                 "minutes_over": d.minutes_over_truth, "minutes_under": d.minutes_under_truth,
+                                 "plan_quantile": plan_quantile, "handover_steps": handover_steps})
+    return rows
+
+
+def load_truth():
+    era = sorted((ROOT / "data" / "era5").glob("era5_italy_2026*.nc"))
+    ds = xr.open_mfdataset(era, combine="by_coords")
+    if "valid_time" in ds.dims:
+        ds = ds.rename({"valid_time": "time"})
+    lsm = load_lsm(ROOT / "data" / "era5" / "era5_italy_lsm.nc")
+    cells = {s.key: nearest_land_cell(lsm, s.lat, s.lon)[:2] for s in SITES}
+    truth = {k: era5_truth(ds, *c) for k, c in cells.items()}
+    return truth, cells
+
+
+def main(paths: list[str]) -> int:
+    from turno.rules import HANDOVER_STEPS, PLAN_QUANTILE
+
+    truth, cells = load_truth()
+    rows = score_files(paths, truth, cells, PLAN_QUANTILE, HANDOVER_STEPS)
     out = ROOT / "results" / "grid_scores.jsonl"
     with out.open("a") as f:
         for r in rows:
