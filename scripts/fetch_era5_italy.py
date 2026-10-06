@@ -10,10 +10,13 @@ month already on disk is skipped, so the script can be rerun after a failure.
 
 from __future__ import annotations
 
+import shutil
 import sys
+import zipfile
 from pathlib import Path
 
 import cdsapi
+import xarray as xr
 
 OUT = Path(__file__).resolve().parent.parent / "data" / "era5"
 
@@ -53,7 +56,28 @@ def fetch(year: str, month: str, days: int, client: cdsapi.Client) -> Path:
     }
     print(f"requesting {target.name}", flush=True)
     client.retrieve("reanalysis-era5-single-levels", request, str(target))
+    merge_if_zip(target)
     return target
+
+
+def merge_if_zip(target: Path) -> None:
+    """The CDS returns a zip of two NetCDFs, instantaneous and accumulated
+    fields, even when unarchived is requested. Merge them into one file."""
+    if not zipfile.is_zipfile(target):
+        return
+    parts_dir = target.with_name(target.stem + "_parts")
+    parts_dir.mkdir(exist_ok=True)
+    zipfile.ZipFile(target).extractall(parts_dir)
+    parts = [xr.open_dataset(p) for p in sorted(parts_dir.glob("*.nc"))]
+    ds = xr.merge(parts, compat="override", join="exact")
+    ds = ds.drop_vars([v for v in ("expver", "number") if v in ds.coords or v in ds])
+    merged = target.with_suffix(".merged.nc")
+    ds.load().to_netcdf(merged)
+    for p in parts:
+        p.close()
+    target.unlink()
+    merged.rename(target)
+    shutil.rmtree(parts_dir)
 
 
 def main() -> int:

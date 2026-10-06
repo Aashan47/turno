@@ -24,6 +24,7 @@ import xarray as xr
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+from turno.grid import load_lsm, nearest_land_cell  # noqa: E402
 from turno.sites import SITES  # noqa: E402
 from turno.solar import cos_zenith_hour_mean, direct_fraction, toa_hour_mean  # noqa: E402
 from turno.wbgt import WbgtInputs, wbgt_c  # noqa: E402
@@ -49,13 +50,14 @@ def main() -> int:
         "# Solar approximations against ERA5",
         "",
         f"Run {date.today().isoformat()} on ERA5 hourly fields, "
-        f"{str(ds.time.values[0])[:10]} to {str(ds.time.values[-1])[:10]}, nearest grid cell to each site.",
+        f"{str(ds.time.values[0])[:10]} to {str(ds.time.values[-1])[:10]}, nearest mostly-land grid cell to each site.",
         "",
         "| Site | Daylight hours | TOA error vs `tisr`, mean abs % | fdir, Erbs minus ERA5, mean abs | WBGT, Erbs minus ERA5 fdir, mean abs C | worst C |",
         "|---|---|---|---|---|---|",
     ]
+    lsm = load_lsm(ROOT / "data" / "era5" / "era5_italy_lsm.nc")
     for s in SITES:
-        x = site_series(ds, s.lat, s.lon)
+        x = site_series(ds, *nearest_land_cell(lsm, s.lat, s.lon)[:2])
         times = [datetime.fromtimestamp(int(t) / 1e9, tz=timezone.utc) for t in x.time.values.astype("int64")]
         lat, lon = float(x.latitude), float(x.longitude)
         ssrd = x["ssrd"].values / 3600.0

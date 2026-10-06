@@ -24,6 +24,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from turno.evaluate import decision_score, wbgt_score  # noqa: E402
+from turno.grid import load_lsm, nearest_land_cell  # noqa: E402
 from turno.sites import SITES  # noqa: E402
 from turno.solar import cos_zenith_hour_mean  # noqa: E402
 from turno.wbgt import WbgtInputs, wbgt_c  # noqa: E402
@@ -73,9 +74,11 @@ def main() -> int:
     if "valid_time" in ds.dims:
         ds = ds.rename({"valid_time": "time"})
 
+    lsm = load_lsm(ROOT / "data" / "era5" / "era5_italy_lsm.nc")
     rows, table = [], []
     for s in SITES:
-        truth = truth_for_site(ds, s.lat, s.lon)
+        clat, clon, _ = nearest_land_cell(lsm, s.lat, s.lon)
+        truth = truth_for_site(ds, clat, clon)
         h = json.loads((ROOT / "data" / "baselines" / f"{s.key}.json").read_text())["hourly"]
         arms: dict[tuple[str, int], dict[str, float]] = {}
         keys = sorted(truth)
@@ -85,7 +88,7 @@ def main() -> int:
             }
             for m in MODELS:
                 if f"temperature_2m_previous_day{lead}_{m}" in h:
-                    arms[(m, lead)] = model_wbgt(h, m, lead, s.lat, s.lon)
+                    arms[(m, lead)] = model_wbgt(h, m, lead, clat, clon)
         for (arm, lead), fc in arms.items():
             common = [k for k in keys if k in fc and np.isfinite(fc[k])]
             if len(common) < 24:
@@ -107,7 +110,9 @@ def main() -> int:
         "# Non-AI baselines against ERA5 WBGT",
         "",
         f"Run {date.today().isoformat()}. Workload: {WORKLOAD}, acclimatized. A miss is an hour planned as more "
-        "work than ERA5 allows. Truth is ERA5, itself a 0.25 degree reanalysis, not a site measurement.",
+        "work than ERA5 allows. Truth is ERA5, itself a 0.25 degree reanalysis, not a site measurement; every arm "
+        "is read at the same ERA5 land cell, at the cell's mean height. Scoring against ERA5 favours models on "
+        "ERA5's own grid, so the 2 km ICON-2I is disadvantaged here.",
         "",
         "| Site | Arm | Lead (days) | Hours | WBGT MAE C | Bias C | Restricted hours | Missed | Miss rate | False restrictions |",
         "|---|---|---|---|---|---|---|---|---|---|",
