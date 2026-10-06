@@ -10,3 +10,4 @@ sources/ordinances/
 data/baselines/
 results/*.json
 data/ecmwf/
+results/*.jsonl
