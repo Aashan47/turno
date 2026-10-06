@@ -33,13 +33,19 @@ PARAMS = ["2t", "2d", "10u", "10v", "sp", "ssrd"]
 NORTH, WEST, SOUTH, EAST = 47.5, 6.0, 36.0, 19.0
 
 
+# AWS throttles bursts on this public bucket ("SlowDown"). A short pause between
+# requests and an exponential backoff, capped at two minutes, keep a long fetch alive.
+PAUSE_S = 0.25
+
+
 def get(client: httpx.Client, url: str, headers=None) -> bytes:
-    for attempt in range(8):
+    for attempt in range(12):
+        time.sleep(PAUSE_S)
         r = client.get(url, headers=headers or {})
         if r.status_code in (200, 206):
             return r.content
         if r.status_code in (429, 503) or b"SlowDown" in r.content[:300]:
-            time.sleep(5 * (attempt + 1))
+            time.sleep(min(120, 5 * 2**attempt))
             continue
         r.raise_for_status()
     raise RuntimeError(f"gave up on {url}")

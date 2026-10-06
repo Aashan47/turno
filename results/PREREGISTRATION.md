@@ -48,3 +48,24 @@ never selected by result.
 - Prediction 2 fails: the ensemble does not reduce misses enough to justify itself.
 - Prediction 3 fails: the refusal fires too often to be a product.
 - Aurora does not run on ROCm, or its output is unphysical at the sites (kill test 1, `05-BUILD-PLAN.md`).
+
+## Amendment 1, 2026-10-06, before any Aurora output exists
+
+**What changed.** The hour plan now always plans for the hard end of the workload range, and only
+forecast members that disagree send an hour to the supervisor. Before, a workload range that straddled
+a work step also sent the hour to the supervisor.
+
+**Why, and what prompted it.** Scoring the ECMWF IFS arm on all 14 dates showed that a single
+deterministic forecast, which has no members to disagree, was handing over 27 to 40% of all 3-hourly
+times, purely because heavy work spans 350 to 465 W. That would break prediction 3's 25% ceiling before
+any ensemble was involved, and a supervisor asked about four hours in ten would stop reading. Planning
+for the hard end is the conservative reading NIOSH's own 30% workload-error statement supports; the range
+is still shown to the user as a note.
+
+**What it does not change.** The truth plan, the miss definition, the dates, the arms and predictions 1,
+2 and 4 are unchanged. Miss rates for the IFS arm were identical before and after (they already used the
+cautious value). Prediction 3 now measures hand-offs caused by forecast disagreement only.
+
+**The bar Aurora must clear**, ECMWF IFS, unacclimatized limit (RAL), pooled over 5 sites and 14 dates,
+miss rate on heat-restricted 3-hourly times: lead 1: 16.1%, lead 2: 18.2%, lead 3: 23.4%, lead 4:
+25.7%, lead 5: 19.2%. Full table: `grid_summary.md`.

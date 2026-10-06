@@ -98,19 +98,22 @@ def plan_hour(
     if cap < 60:
         fewest, most = min(fewest, cap), min(most, cap)
 
-    if fewest == most:
-        reasons_ok = (ban_reason,) if cap < 60 and ban_reason else ()
-        return HourPlan(hour_local, Outcome.WORK, fewest, (fewest, most), members, reasons_ok)
-
-    reasons = [ban_reason] if cap < 60 and ban_reason else []
-    if len({b.fewest for b in bands}) > 1:
-        reasons.append(
-            f"Forecast members disagree: WBGT from {min(members):.1f} to {max(members):.1f} C "
-            f"spans more than one work step."
-        )
+    # The plan is always made for the hard end of the workload range: NIOSH puts
+    # the error of a workload estimate as high as 30%, so the cautious end is the
+    # safe reading, not a guess. The range is reported, not handed over. Only
+    # forecast members that disagree send the hour to a person, because that is
+    # uncertainty a supervisor can act on (look at the sky, call the site).
+    notes = [ban_reason] if cap < 60 and ban_reason else []
     if any(not b.determined for b in bands):
-        reasons.append(
-            f"The answer depends on how hard the crew works within {workload.label} "
-            f"({workload.m_low_w:.0f} to {workload.m_high_w:.0f} W), which a forecast cannot know."
+        notes.append(
+            f"Planned for the hard end of {workload.label} ({workload.m_high_w:.0f} W); lighter work "
+            f"within the range ({workload.m_low_w:.0f} W) would allow up to {most} minutes."
         )
+    if len({b.fewest for b in bands}) == 1:
+        return HourPlan(hour_local, Outcome.WORK, fewest, (fewest, most), members, tuple(notes))
+
+    reasons = notes + [
+        f"Forecast members disagree: WBGT from {min(members):.1f} to {max(members):.1f} C "
+        f"spans more than one work step."
+    ]
     return HourPlan(hour_local, Outcome.UNDETERMINED, fewest, (fewest, most), members, tuple(reasons))

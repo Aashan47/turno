@@ -44,3 +44,15 @@ def test_an_unconfirmed_ban_is_handed_over_with_the_ban_assumed():
     p = plan_hour("14:00", [20.0, 20.0], "heavy", True, banned_minutes=60,
                   ban_reason="Confirm today's Worklimate rating", ban_uncertain=True)
     assert p.outcome is Outcome.UNDETERMINED and p.needs_supervisor and p.minutes == 0
+
+
+def test_workload_range_alone_is_planned_cautiously_not_handed_over():
+    """Find a WBGT where the two ends of heavy work land on different steps; one
+    forecast member there must plan the hard end and keep the hour, with a note."""
+    from turno.limits import minutes_band
+
+    w = next(x / 10 for x in range(240, 320) if not minutes_band(x / 10, "heavy", True).determined)
+    p = plan_hour("11:00", [w], "heavy", True)
+    assert p.outcome is Outcome.WORK and not p.needs_supervisor
+    assert p.minutes == minutes_band(w, "heavy", True).fewest
+    assert any("hard end" in r for r in p.reasons)
