@@ -66,26 +66,43 @@ def plan_hour(
     wbgt_members_c,
     workload: Workload | str,
     acclimatized: bool,
-    banned_by: str | None = None,
+    banned_minutes: int = 0,
+    ban_reason: str | None = None,
+    ban_uncertain: bool = False,
 ) -> HourPlan:
-    """Decide one hour. `banned_by` names the ordinance when one applies."""
+    """Decide one hour.
+
+    `banned_minutes` is how much of the hour an ordinance bans (60, or 30 for the
+    12:00 hour of a 12:30 ban). `ban_uncertain` means a ban could apply but
+    something only a person can confirm is missing: the plan then assumes the ban,
+    the cautious value, and hands the hour over with `ban_reason`.
+    """
     if isinstance(workload, str):
         workload = WORKLOADS[workload]
     members = tuple(float(x) for x in np.asarray(wbgt_members_c, dtype=float).ravel())
     if not members or any(not np.isfinite(x) for x in members):
         raise ValueError("every member must be a finite WBGT value")
 
-    if banned_by:
-        return HourPlan(hour_local, Outcome.BANNED, 0, (0, 0), members, (f"Banned by {banned_by}.",))
+    if banned_minutes >= 60 and not ban_uncertain:
+        return HourPlan(hour_local, Outcome.BANNED, 0, (0, 0), members, (ban_reason or "Banned by ordinance.",))
 
     bands = [minutes_band(w, workload, acclimatized) for w in members]
     fewest = min(b.fewest for b in bands)
     most = max(b.most for b in bands)
+    cap = 60 - max(0, min(60, banned_minutes))
+
+    if ban_uncertain:
+        return HourPlan(hour_local, Outcome.UNDETERMINED, min(fewest, cap), (min(fewest, cap), most), members,
+                        (ban_reason or "An ordinance may apply.",))
+
+    if cap < 60:
+        fewest, most = min(fewest, cap), min(most, cap)
 
     if fewest == most:
-        return HourPlan(hour_local, Outcome.WORK, fewest, (fewest, most), members)
+        reasons_ok = (ban_reason,) if cap < 60 and ban_reason else ()
+        return HourPlan(hour_local, Outcome.WORK, fewest, (fewest, most), members, reasons_ok)
 
-    reasons = []
+    reasons = [ban_reason] if cap < 60 and ban_reason else []
     if len({b.fewest for b in bands}) > 1:
         reasons.append(
             f"Forecast members disagree: WBGT from {min(members):.1f} to {max(members):.1f} C "

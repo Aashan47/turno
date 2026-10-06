@@ -49,5 +49,30 @@ Store, CC BY 4.0. Fetched with `scripts/fetch_era5_italy.py`.
 
 INAIL-CNR Worklimate, "Report Caldo e Lavoro n.4", July 2025: "ordinanze regionali vincolanti, che
 dispongono il divieto di lavoro all'aperto nelle ore centrali della giornata (12:30–16:00) nei giorni
-con rischio "Alto" secondo la piattaforma Worklimate." Per-region ordinance texts: `data/ordinances_2026.json`
-(in progress).
+con rischio "Alto" secondo la piattaforma Worklimate."
+
+The 2026 ordinances, read 2026-10-06, one record each with verbatim text and URL in
+`data/ordinances_2026.json`:
+
+- **Verified from the region's own site or bulletin (15 regions):** Lazio (Z00001 of 22/05, widened by
+  Z00003, extended by Z00004 to 30/09), Liguria (1/2026, to 31/08), Lombardia (484 of 09/06, 10/06 to
+  23/09), Puglia, Campania, Sicilia, Toscana, Emilia-Romagna, Calabria, Sardegna, Umbria, Veneto,
+  Piemonte, Abruzzo, Marche.
+- **Weaker sourcing, stated in each record:** Campania's full text from a university's copy of the signed
+  act; Sicilia and Sardegna read through a reader proxy of the region's URLs; Veneto from the region's
+  health portal because its bulletin would not connect (its later order n. 107 narrows the ban to 14:00
+  to 16:00, validity unverified, so the code does not decide from it).
+- **Press only, not used to decide anything:** Basilicata. Every regional host refused connections.
+- Sardegna had **no ban from 1 to 6 September 2026**: order n. 4 states order n. 3 "cessata di produrre
+  effetti il 31 agosto 2026". Modelled in `turno/ordinances.py`.
+
+Worklimate's risk level is forecast WBGT as a share of the worker's limit: under 80% "nullo", 80 to
+100% "basso", 100 to 120% "moderato", over 120% "alto". For a non-acclimatized worker the limit is the
+NIOSH RAL, the same formula as `turno/limits.py`. Its maps assume a healthy, non-acclimatized worker
+and are produced at about 2 km, for 08, 12, 16 and 20 local time, up to three days ahead. The ordinance
+trigger is the highest level forecast between 12:00 and 16:00. Turno never computes this official
+rating; the supervisor confirms it.
+
+National context, not binding rules: the Conferenza delle Regioni "Linee di indirizzo" (19/06/2025)
+and the Ministry of Labour "Protocollo quadro" (D.M. 95/2025), which lists "Riorganizzazione turni e
+orari di lavoro" among its themes.

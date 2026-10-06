@@ -11,7 +11,7 @@ def test_cool_agreeing_members_give_full_work():
 
 
 def test_an_ordinance_wins_over_any_forecast():
-    p = plan_hour("13:00", [18.0, 18.0], "heavy", True, banned_by="Lazio ordinance")
+    p = plan_hour("13:00", [18.0, 18.0], "heavy", True, banned_minutes=60, ban_reason="Lazio ordinance")
     assert p.outcome is Outcome.BANNED and p.minutes == 0
     assert "Lazio ordinance" in p.reasons[0]
 
@@ -33,3 +33,14 @@ def test_plan_is_deterministic():
 def test_nan_member_is_refused_not_silently_dropped():
     with pytest.raises(ValueError):
         plan_hour("14:00", [26.0, float("nan")], "heavy", True)
+
+
+def test_a_half_hour_ban_caps_the_twelve_oclock_hour_at_thirty_minutes():
+    p = plan_hour("12:00", [20.0, 20.0], "heavy", True, banned_minutes=30, ban_reason="Lazio ordinance")
+    assert p.outcome is Outcome.WORK and p.minutes == 30
+
+
+def test_an_unconfirmed_ban_is_handed_over_with_the_ban_assumed():
+    p = plan_hour("14:00", [20.0, 20.0], "heavy", True, banned_minutes=60,
+                  ban_reason="Confirm today's Worklimate rating", ban_uncertain=True)
+    assert p.outcome is Outcome.UNDETERMINED and p.needs_supervisor and p.minutes == 0
