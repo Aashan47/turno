@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+.pytest_cache/
+data/era5/
+data/*.log
+sources/*.pdf
+sources/*.txt
+sources/ordinances/
+.env
