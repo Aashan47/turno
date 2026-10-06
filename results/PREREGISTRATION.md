@@ -69,3 +69,28 @@ cautious value). Prediction 3 now measures hand-offs caused by forecast disagree
 **The bar Aurora must clear**, ECMWF IFS, unacclimatized limit (RAL), pooled over 5 sites and 14 dates,
 miss rate on heat-restricted 3-hourly times: lead 1: 16.1%, lead 2: 18.2%, lead 3: 23.4%, lead 4:
 25.7%, lead 5: 19.2%. Full table: `grid_summary.md`.
+
+## Amendment 2, 2026-10-06, before any Aurora output and before the test dates were scored with it
+
+**What prompted it.** With all 14 dates of ECMWF ENS (10 members) scored, the original rule, hand over
+whenever any member disagrees, handed 42 to 54% of times to the supervisor. With ten members some
+disagreement is almost always present, so the rule could never meet prediction 3.
+
+**What changed.**
+- Two settings were added: which member the plan follows (a quantile) and how far apart members must be,
+  in 15-minute work steps, before an hour is handed over.
+- The dates are split. **June (3, 10, 17, 24) is development**: the settings are chosen there.
+  **July and August (10 dates) is the test set**: every arm, ECMWF and Aurora, is reported on it.
+- Hand-off rate is counted over working hours, 07:00 to 19:00 local (06, 09, 12, 15 UTC), as prediction 3
+  already said; the earlier table counted night times too.
+- Every ensemble arm uses 10 members, because the hottest member depends on how many there are.
+
+**Selection rule, committed in `scripts/sweep_rules.py` (commit 7cf3588) before it was run:** lowest
+miss rate on heat-restricted times among settings with hand-off at most 25%, ties broken by fewer minutes
+withheld from safe work; ENS, leads 1 to 3, RAL, June only.
+
+**Chosen:** follow the hottest member (quantile 1.0); hand over at 2 steps apart. June: miss 6.2%,
+hand-off 14.2%, 5.5 minutes withheld per working-hour time. Full sweep: `rule_sweep_june.md`. The
+hand-over threshold did not change misses in any setting, because an undetermined hour is planned on
+its cautious value; the threshold only sets how often a person is asked. Where two settings tied, the
+first in the sweep order (lower threshold, more human review) was taken.

@@ -25,7 +25,7 @@ def main() -> int:
         a["n"] += r["n"]
         a["abs"] += r["mae_c"] * r["n"]
         a["bias"] += r["bias_c"] * r["n"]
-        for f in ("restricted", "missed", "false_restrictions", "handed_over", "hours"):
+        for f in ("restricted", "missed", "false_restrictions", "handed_over", "hours", "minutes_over", "minutes_under"):
             a[f] += r[f]
         a["inits"] = a.get("inits", set()) | {r["init"]}
 
@@ -33,10 +33,10 @@ def main() -> int:
         "# Gridded arms against ERA5, pooled over 5 sites",
         "",
         f"Run {date.today().isoformat()}. Workload heavy. 3-hourly valid times. Init dates from "
-        "PREREGISTRATION.md.",
+        "PREREGISTRATION.md. Working hours only (06, 09, 12, 15 UTC). Rules frozen in turno/rules.py.",
         "",
-        "| Arm | Limit | Lead (days) | Inits | Times | WBGT MAE C | Bias C | Restricted | Missed | Miss rate | Handed over |",
-        "|---|---|---|---|---|---|---|---|---|---|---|",
+        "| Arm | Limit | Lead (days) | Inits | Times | WBGT MAE C | Bias C | Restricted | Missed | Miss rate | Handed over | Min over per time | Min withheld per time |",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|---|",
     ]
     for (arm, accl, lead), a in sorted(agg.items()):
         miss = a["missed"] / a["restricted"] if a["restricted"] else 0.0
@@ -44,7 +44,7 @@ def main() -> int:
         lines.append(
             f"| {arm} | {'REL' if accl else 'RAL'} | {lead} | {len(a['inits'])} | {int(a['n'])} | "
             f"{a['abs'] / a['n']:.2f} | {a['bias'] / a['n']:+.2f} | {int(a['restricted'])} | {int(a['missed'])} | "
-            f"{miss:.1%} | {hand:.1%} |"
+            f"{miss:.1%} | {hand:.1%} | {a['minutes_over'] / a['hours']:.2f} | {a['minutes_under'] / a['hours']:.2f} |"
         )
     out = ROOT / "results" / "grid_summary.md"
     out.write_text("\n".join(lines) + "\n")
