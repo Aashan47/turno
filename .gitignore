@@ -10,5 +10,5 @@ sources/ordinances/
 data/baselines/
 results/*.json
 data/ecmwf/
-results/*.jsonl
+results/grid_scores.jsonl
 data/init/
