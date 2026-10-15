@@ -5,7 +5,9 @@
   --radius:6px;
 }
 @media (prefers-color-scheme: dark){
-  :root{ --paper:#161513; --ink:#F1EEE7; --muted:#A39E94; --rule:#2E2B27; --soft:#201E1B; }
+  :root{ --paper:#161513; --ink:#F1EEE7; --muted:#A39E94; --rule:#2E2B27; --soft:#242220;
+         --danger:#E4604F; --ok:#7CC89A; }
+  .verdict .ban{color:#E4604F}
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
