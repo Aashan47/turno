@@ -27,7 +27,8 @@
   // dispatchEvent rather than el.click(): the strip's columns are SVG groups,
   // and SVG elements have no click() method.
   async function click(el) { await moveTo(el); await press(); el.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true })); }
-  async function choose(sel, value) { const el = document.querySelector(sel); await moveTo(el); await press(); el.value = value; el.dispatchEvent(new Event("change")); }
+  async function park() { cur.style.left = "88%"; cur.style.top = "42%"; await sleep(500); }
+  async function choose(sel, value) { const el = document.querySelector(sel); await moveTo(el); await press(); el.value = value; el.dispatchEvent(new Event("change")); await park(); }
   async function scrollTo(el, block = "start") { el.scrollIntoView({ behavior: "smooth", block }); await sleep(900); }
   const waitFor = async (fn, ms = 30000) => { const t = performance.now(); while (!fn()) { if (performance.now() - t > ms) throw new Error("waited too long for " + fn); await sleep(100); } };
   const $ = (s) => document.querySelector(s);
@@ -41,6 +42,9 @@
 
   window.__demoPlay = async () => {
     try {
+      // The Lombardia re-read starts now, on AMD, with its OCR cache cleared by
+      // record.py, so both the OCR and the extraction run while the film plays.
+      fetch("/api/reread", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ region: "Lombardia", force: true }) }).catch(() => {});
       // Opening slate.
       showSlate(`<div style="font-size:120px;font-weight:800;letter-spacing:-.03em;line-height:1">Turno</div>
         <div style="font-size:34px;margin-top:22px;max-width:30ch">Heat-safe shift planning for outdoor crews.</div>
@@ -107,6 +111,10 @@
       mark("law"); await sleep(17000);
       await click($("#btn-reread"));
       await waitFor(() => /Live re-read/.test($("#reread").textContent) || /failed|unchanged/.test($("#reread").textContent), 240000);
+      if (!/Live re-read/.test($("#reread").textContent)) {  // AMD's OCR answers 502 now and then: one more try
+        await sleep(4000); await click($("#btn-reread"));
+        await waitFor(() => /Live re-read/.test($("#reread").textContent) || /failed|unchanged/.test($("#reread").textContent), 240000);
+      }
       await scrollTo($("#reread"), "center");
       window.__demoFacts.reread = $("#reread").textContent.slice(0, 160);
       mark("reread"); await sleep(15000);

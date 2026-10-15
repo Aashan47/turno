@@ -62,8 +62,24 @@ def preflight() -> None:
     r = post("/api/briefing", {"plan": plan_payload})
     if not r.get("by_model"):
         raise SystemExit(f"Gemma's briefing failed its check: {r.get('problems')}")
-    print("starting the Lombardia re-read on AMD", flush=True)
+    # Prove AMD's OCR is up before the camera rolls: a forced re-read with the
+    # OCR cache cleared must finish. Then the cache is cleared again, so the scene's
+    # own re-read, started at its first second, runs OCR and extraction on camera.
+    ocr_cache = HERE.parent / "data" / "ocr" / "lombardia.md"
+    ocr_cache.unlink(missing_ok=True)
+    print("checking AMD OCR with a forced Lombardia re-read", flush=True)
     post("/api/reread", {"region": "Lombardia", "force": True}, timeout=30)
+    for _ in range(100):
+        time.sleep(3)
+        st = get("/api/reread/Lombardia")
+        if st.get("status") == "done":
+            print(f"  ok: OCR {st['ocr_seconds']} s, extraction {st['read_seconds']} s", flush=True)
+            break
+        if st.get("status") == "error":
+            raise SystemExit(f"AMD OCR failed in preflight: {st.get('message')}")
+    else:
+        raise SystemExit("AMD re-read did not finish in preflight")
+    ocr_cache.unlink(missing_ok=True)
 
 
 def record() -> Path:

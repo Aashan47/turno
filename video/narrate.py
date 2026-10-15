@@ -41,7 +41,10 @@ STYLE = ("Read this as a site engineer calmly walking a colleague through a scre
 VOICE_LUFS, MUSIC_LUFS = -16.0, -34.0
 BREATH = 0.45
 PAUSE_KEEP = 0.9
-MAX_SILENCE, MIN_COVERAGE = 3.0, 0.72
+# A gap up to 4.5 s is allowed between beats: those seconds are the scene scrolling
+# and clicking into the next view, which the viewer needs to follow. The limit
+# still fails a stretch of dead picture (the 35 s wait seen in take two).
+MAX_SILENCE, MIN_COVERAGE = 4.5, 0.72
 MUSIC = Path("/Users/aashanjaved/Desktop/Drive -D - Aashan/Research Assistant/Hackathons/Music for Reels/ES_Towntones - Dusty Decks.mp3")
 
 # The script. Every number spoken is on screen in that beat. Three dots mark a
@@ -181,6 +184,11 @@ def stamp(t: float) -> str:
 
 
 def main() -> None:
+    # Always start from the raw take, so a rerun trims the original, not a trim.
+    raw = HERE / "turno-demo-raw.mp4"
+    if raw.exists():
+        import shutil
+        shutil.copyfile(raw, VIDEO)
     data = json.loads(MARKS.read_text())
     beats, lead_in, scene = data["beats"], data["lead_in"], data["elapsed"]
     at_of = {b["id"]: b["at"] for b in beats}
@@ -283,23 +291,39 @@ def main() -> None:
     if MUSIC.exists():
         gain = MUSIC_LUFS - loudness(MUSIC, seconds=video_len)
         inputs += ["-i", str(MUSIC)]
-        filters.append(f"[{len(placed) + 1}:a]aformat=sample_rates=24000:channel_layouts=mono,atrim=0:{video_len:.3f},asetpts=N/SR/TB,"
+        # The track is shorter than the film, so it loops before the trim; the
+        # mixer otherwise ends the whole mix at the bed's length (136 s).
+        filters.append(f"[{len(placed) + 1}:a]aformat=sample_rates=24000:channel_layouts=mono,aloop=loop=-1:size=8000000,"
+                       f"atrim=0:{video_len:.3f},asetpts=N/SR/TB,"
                        f"volume={gain:.2f}dB,afade=t=in:st=0:d=2.0,afade=t=out:st={max(0.0, video_len - 2.8):.2f}:d=2.8[bed]")
         filters.append("[bed][vo]amix=inputs=2:duration=first:normalize=0,alimiter=limit=0.95[out]")
     else:
         filters.append("[vo]alimiter=limit=0.95[out]")
         print("music: none found, voice only")
     ff([*inputs, "-filter_complex", ";".join(filters), "-map", "[out]", "-t", f"{video_len:.3f}", "-c:a", "aac", "-b:a", "192k", str(OUT)])
-    if abs(duration(OUT) - video_len) > 0.25:
-        raise SystemExit("audio and video do not end together")
+    # AAC adds encoder priming and padding at the end of the container (about a
+    # tenth of a second at 24 kHz); the mux below uses -shortest and the muxed
+    # streams are checked to 0.3 s, so this guard only catches a gross mismatch.
+    if abs(duration(OUT) - video_len) > 1.0:
+        raise SystemExit(f"audio {duration(OUT):.2f}s and video {video_len:.2f}s do not end together")
 
     final = HERE / "turno-demo-voiced.mp4"
     ff(["-i", str(VIDEO), "-i", str(OUT), "-map", "0:v:0", "-map", "1:a:0", "-c:v", "copy", "-c:a", "aac", "-b:a", "192k",
         "-shortest", "-movflags", "+faststart", str(final)])
     VIDEO.unlink(); final.rename(VIDEO)
+    v = float(subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=duration", "-of", "csv=p=0", str(VIDEO)], capture_output=True, text=True).stdout.strip())
+    a = float(subprocess.run(["ffprobe", "-v", "error", "-select_streams", "a:0", "-show_entries", "stream=duration", "-of", "csv=p=0", str(VIDEO)], capture_output=True, text=True).stdout.strip())
+    if abs(v - a) > 0.3:
+        raise SystemExit(f"muxed streams do not end together: video {v:.2f}s, audio {a:.2f}s")
+    print(f"  muxed: video {v:.2f}s, audio {a:.2f}s")
     # A captioned copy for viewers with the sound off.
-    srt = str(SRT).replace("\\", "\\\\").replace(":", "\\:").replace("'", "\\'")
-    ff(["-i", str(VIDEO), "-vf", f"subtitles='{srt}':force_style='FontName=Bricolage Grotesque,FontSize=20,PrimaryColour=&HFFFFFF&,OutlineColour=&H80000000&,Outline=1,Shadow=0,MarginV=36'",
+    # The filter parser chokes on the repository path (spaces, quotes), so the
+    # subtitle file is copied to a plain path and the style commas are escaped.
+    import shutil
+    tmp_srt = Path("/tmp/claude_turno_captions.srt")
+    shutil.copyfile(SRT, tmp_srt)
+    style = "FontSize=20,PrimaryColour=&HFFFFFF&,OutlineColour=&H80000000&,Outline=1,Shadow=0,MarginV=36".replace(",", "\\,")
+    ff(["-i", str(VIDEO), "-vf", f"subtitles={tmp_srt}:force_style={style}",
         "-c:a", "copy", "-crf", "19", "-preset", "slow", "-movflags", "+faststart", str(HERE / "turno-demo-captioned.mp4")])
     print(f"\n{VIDEO.name} {duration(VIDEO):.1f}s, {fresh} lines synthesised, {len(placed) - fresh} cached; captions in {SRT.name}")
 
