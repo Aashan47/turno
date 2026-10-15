@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Turno: slides</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#F4F5F2;--ink:#1E1A15;--muted:#6F6A61;--rule:#D8D6CE;--soft:#E9EAE5;
+  --cool:#7FA6BC;--warm:#E4B94A;--hot:#EE6A2C;--danger:#B9231C;--stop:#5A0E12;--amd:#C8102E;--ok:#2B6B46}
+@page{size:1920px 1080px;margin:0}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--paper);color:var(--ink);font-family:"Bricolage Grotesque",system-ui,sans-serif;font-variant-numeric:tabular-nums;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.slide{position:relative;width:1920px;height:1080px;overflow:hidden;padding:96px 120px;background:var(--paper);break-after:page;page-break-after:always}
+.slide:last-child{break-after:auto;page-break-after:auto}
+.kicker{font-size:22px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin:0 0 18px}
+.kicker.amd{color:var(--amd)}
+h1{font-size:84px;font-weight:800;letter-spacing:-0.03em;line-height:1.02;margin:0 0 36px;max-width:22ch;font-variation-settings:"opsz" 96}
+h2{font-size:34px;font-weight:700;letter-spacing:-0.015em;margin:0 0 14px}
+p,li{font-size:30px;line-height:1.4;margin:0}
+.lead{font-size:34px;max-width:40ch;color:var(--ink)}
+.muted{color:var(--muted)}
+.small{font-size:22px;line-height:1.45}
+.foot{position:absolute;left:120px;right:120px;bottom:56px;display:flex;justify-content:space-between;font-size:20px;color:var(--muted)}
+.foot b{color:var(--ink);font-weight:700}
+.num{font-size:150px;font-weight:800;letter-spacing:-0.04em;line-height:1;margin:0}
+.cols{display:grid;gap:56px}
+.c2{grid-template-columns:1fr 1fr}.c3{grid-template-columns:1fr 1fr 1fr}
+table{border-collapse:collapse;width:100%;font-size:26px}
+th{text-align:left;font-weight:600;color:var(--muted);font-size:20px;padding:10px 18px 10px 0;border-bottom:2px solid var(--ink)}
+td{padding:12px 18px 12px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+td.r,th.r{text-align:right;padding-right:0;padding-left:22px;white-space:nowrap}
+.t-row td{font-weight:800}
+.tag{display:inline-block;font-size:16px;font-weight:800;letter-spacing:.04em;padding:4px 10px;border-radius:4px;color:#fff;background:var(--amd);vertical-align:middle;margin-right:12px}
+.tag.grey{background:var(--muted)}
+.box{border:2px solid var(--ink);border-radius:10px;padding:24px 28px}
+.box.amd{border:3px solid var(--amd)}
+.box.ext{border:2px dashed var(--muted)}
+.box.soft{background:var(--soft);border-color:var(--soft)}
+.box h2{margin-bottom:10px}
+ul{padding-left:1.1em;margin:0}
+li{margin-bottom:14px}
+li.lim{font-size:27px}
+.small li{font-size:inherit;line-height:1.35;margin-bottom:10px}
+.wordmark{font-size:220px;font-weight:800;letter-spacing:-0.045em;line-height:.9;margin:0;font-variation-settings:"opsz" 96}
+.shot{display:block;width:1680px;height:auto;border:1px solid var(--rule);border-radius:8px;box-shadow:0 6px 40px rgba(30,26,21,.08)}
+.bar{display:flex;align-items:center;gap:14px;font-size:22px}
+.bar i{display:block;height:30px;border-radius:3px}
+.chart{display:grid;grid-template-columns:150px 1fr;row-gap:14px;column-gap:20px;align-items:center;font-size:24px}
+.chart .lab{color:var(--muted);text-align:right}
+.chart .pair{display:flex;flex-direction:column;gap:6px}
+</style>
+</head>
+<body>
+
+<!-- 1. title -->
+<section class="slide">
+  <h1 class="wordmark">Turno</h1>
+  <p class="lead" style="font-size:52px;margin-top:40px;max-width:30ch;letter-spacing:-0.015em">Heat-safe shift planning for outdoor crews</p>
+  <div style="position:absolute;left:120px;right:120px;bottom:170px"><svg viewBox="0 0 1680 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A working day in thirteen columns, 07 to 19. Column height is minutes of work per hour, colour is heat, hatched columns are banned by law, dashed outlines go to the supervisor.">
+<defs><pattern id="hatch" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="12" height="12" fill="#F4F5F2"/><rect width="4.4" height="12" fill="#1E1A15"/></pattern></defs>
+<rect x="754.5" y="0" width="430.5" height="356" fill="#E9EAE5" rx="6"/>
+<text x="969.75" y="404" text-anchor="middle" font-size="22" font-weight="700" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">12:30 to 16:00 banned by law</text>
+<line x1="78" x2="1677" y1="265" y2="265" stroke="#D8D6CE" stroke-width="1.5"/>
+<text x="64" y="272" text-anchor="end" font-size="19" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">15</text>
+<line x1="78" x2="1677" y1="190" y2="190" stroke="#D8D6CE" stroke-width="1.5"/>
+<text x="64" y="197" text-anchor="end" font-size="19" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">30</text>
+<line x1="78" x2="1677" y1="115" y2="115" stroke="#D8D6CE" stroke-width="1.5"/>
+<text x="64" y="122" text-anchor="end" font-size="19" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">45</text>
+<line x1="78" x2="1677" y1="40" y2="40" stroke="#D8D6CE" stroke-width="1.5"/>
+<text x="64" y="47" text-anchor="end" font-size="19" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">60</text>
+<text x="64" y="347" text-anchor="end" font-size="19" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">min</text>
+<rect x="94.5" y="40" width="90" height="300" rx="5" fill="#7FA6BC"/>
+<text x="139.5" y="26" text-anchor="middle" font-size="22" font-weight="700" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">60</text>
+<text x="139.5" y="372" text-anchor="middle" font-size="22" font-weight="500" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">07</text>
+<rect x="217.5" y="40" width="90" height="300" rx="5" fill="#A9AF8C"/>
+<text x="262.5" y="26" text-anchor="middle" font-size="22" font-weight="700" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">60</text>
+<text x="262.5" y="372" text-anchor="middle" font-size="22" font-weight="500" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">08</text>
+<rect x="340.5" y="115" width="90" height="225" rx="5" fill="#E4B94A"/>
+<text x="385.5" y="101" text-anchor="middle" font-size="22" font-weight="700" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">45</text>
+<text x="385.5" y="372" text-anchor="middle" font-size="22" font-weight="500" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">09</text>
+<rect x="463.5" y="190" width="90" height="150" rx="5" fill="#E98D3B"/>
+<text x="508.5" y="176" text-anchor="middle" font-size="22" font-weight="700" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">30</text>
+<text x="508.5" y="372" text-anchor="middle" font-size="22" font-weight="500" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">10</text>
+<rect x="586.5" y="40" width="90" height="300" rx="5" fill="none" stroke="#1E1A15" stroke-width="2.6" stroke-dasharray="9 7"/>
+<rect x="586.5" y="265" width="90" height="75" rx="5" fill="#EE6A2C"/>
+<text x="631.5" y="84" text-anchor="middle" font-size="34" font-weight="800" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">?</text>
+<text x="631.5" y="372" text-anchor="middle" font-size="22" font-weight="800" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">11</text>
+<rect x="709.5" y="332" width="90" height="8" rx="4" fill="#5A0E12"/>
+<text x="754.5" y="318" text-anchor="middle" font-size="22" font-weight="700" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">0</text>
+<text x="754.5" y="372" text-anchor="middle" font-size="22" font-weight="500" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">12</text>
+<rect x="832.5" y="40" width="90" height="300" rx="5" fill="url(#hatch)"/>
+<text x="877.5" y="372" text-anchor="middle" font-size="22" font-weight="500" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">13</text>
+<rect x="955.5" y="40" width="90" height="300" rx="5" fill="url(#hatch)"/>
+<text x="1000.5" y="372" text-anchor="middle" font-size="22" font-weight="500" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">14</text>
+<rect x="1078.5" y="40" width="90" height="300" rx="5" fill="url(#hatch)"/>
+<text x="1123.5" y="372" text-anchor="middle" font-size="22" font-weight="500" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">15</text>
+<rect x="1201.5" y="332" width="90" height="8" rx="4" fill="#5A0E12"/>
+<text x="1246.5" y="318" text-anchor="middle" font-size="22" font-weight="700" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">0</text>
+<text x="1246.5" y="372" text-anchor="middle" font-size="22" font-weight="500" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">16</text>
+<rect x="1324.5" y="40" width="90" height="300" rx="5" fill="none" stroke="#1E1A15" stroke-width="2.6" stroke-dasharray="9 7"/>
+<rect x="1324.5" y="265" width="90" height="75" rx="5" fill="#B9231C"/>
+<text x="1369.5" y="84" text-anchor="middle" font-size="34" font-weight="800" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">?</text>
+<text x="1369.5" y="372" text-anchor="middle" font-size="22" font-weight="800" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">17</text>
+<rect x="1447.5" y="190" width="90" height="150" rx="5" fill="#EE6A2C"/>
+<text x="1492.5" y="176" text-anchor="middle" font-size="22" font-weight="700" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">30</text>
+<text x="1492.5" y="372" text-anchor="middle" font-size="22" font-weight="500" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">18</text>
+<rect x="1570.5" y="115" width="90" height="225" rx="5" fill="#E4B94A"/>
+<text x="1615.5" y="101" text-anchor="middle" font-size="22" font-weight="700" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">45</text>
+<text x="1615.5" y="372" text-anchor="middle" font-size="22" font-weight="500" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">19</text>
+</svg></div>
+  <div class="foot"><span><b>turno.aashanjaved.com</b> · github.com/Aashan47/turno</span><span>AMD Developer Hackathon: ACT III · Health and Wellbeing · Intelligent Industry</span></div>
+</section>
+
+<!-- 2. the problem -->
+<section class="slide">
+  <p class="kicker">The problem</p>
+  <h1>The law bans work from 12:30 to 16:00. Most of the dangerous hours are outside that window.</h1>
+  <div class="cols c2" style="margin-top:20px">
+    <div>
+      <p class="num" style="color:var(--danger)">59 to 66%</p>
+      <p class="lead" style="margin-top:18px">of heat-restricted working hours fall outside the 12:30 to 16:00 ban, even counting the ban as if it applied every day.</p>
+      <p class="small muted" style="margin-top:22px;max-width:46ch">ERA5, June to August 2026, 5 Italian sites, working hours 07:00 to 19:00. A heat-restricted hour is one where NIOSH 2016-106 allows less than a full hour of work.</p>
+    </div>
+    <div>
+      <table>
+        <tr><th>Work, crew</th><th class="r">Restricted hours</th><th class="r">Outside the ban</th><th class="r">Share</th></tr>
+        <tr><td>Heavy, not acclimatized</td><td class="r">5,239</td><td class="r">3,444</td><td class="r"><b>66%</b></td></tr>
+        <tr><td>Moderate, not acclimatized</td><td class="r">4,659</td><td class="r">2,933</td><td class="r"><b>63%</b></td></tr>
+        <tr><td>Heavy, acclimatized</td><td class="r">3,776</td><td class="r">2,215</td><td class="r"><b>59%</b></td></tr>
+      </table>
+      <p class="small muted" style="margin-top:22px">Every summer, Italian regions ban manual outdoor work from 12:30 to 16:00 on days the national Worklimate service rates heat risk ALTO. A site supervisor still has to decide, hour by hour, how long each crew can work outside that window, prove the ban was respected, and tell the crew in a language they read.</p>
+    </div>
+  </div>
+  <div class="foot"><span>Source: results/value.md</span><span>Turno</span></div>
+</section>
+
+<!-- 3. what Turno does -->
+<section class="slide">
+  <p class="kicker">What Turno does</p>
+  <div class="cols" style="grid-template-columns:520px 1fr;gap:48px;align-items:start">
+    <div>
+      <h2 style="font-size:40px;line-height:1.15;margin-bottom:22px">One strip per day.</h2>
+      <p class="small" style="font-size:24px;margin-bottom:16px">Column height is minutes of work in that hour. Colour is heat. Hatched hours are banned by law. A dashed outline means the forecast members disagree and the supervisor decides.</p>
+      <p class="small" style="font-size:24px;margin-bottom:16px">Above the strip: the spread of the forecast members, the NIOSH limit, and, on replayed days, the line of what actually happened.</p>
+      <p class="small muted" style="font-size:22px">Milano, Friday 31 July 2026, heavy work, crew new to the heat, Worklimate rating ALTO. Planned the day before and checked against ERA5: 9 of 13 restricted hours were outside the ban, the plan allowed too much work in 1 hour of 13, and that hour is marked.</p>
+    </div>
+    <img class="shot" style="width:100%" src="app-milano-2026-07-31.png" alt="Turno live app: Milano, Friday 31 July 2026, heavy work, crew new to the heat, Worklimate rating ALTO">
+  </div>
+  <div class="foot"><span>Screenshot of the live app, turno.aashanjaved.com, 15 October 2026</span><span>Turno</span></div>
+</section>
+
+<!-- 4. how it decides -->
+<section class="slide">
+  <p class="kicker">How it decides</p>
+  <h1 style="font-size:60px;margin-bottom:28px;max-width:32ch">Rules decide. Models read and explain. The supervisor confirms the rating.</h1>
+  <div class="cols c3" style="margin-top:0;gap:36px">
+    <div class="box">
+      <h2>Rules decide</h2>
+      <ul class="small" style="font-size:22px">
+        <li>ECMWF open-data ensemble, 10 members, at the site's grid cell.</li>
+        <li>WBGT per member per hour, Liljegren method (ECMWF thermofeel).</li>
+        <li>NIOSH 2016-106 limits as one-hour averages: 60, 45, 30, 15 or 0 minutes, planned for the hard end of the workload.</li>
+        <li>The plan follows the hottest member. When members are 30 minutes of work apart, the hour goes to the supervisor with the reason.</li>
+      </ul>
+    </div>
+    <div class="box amd">
+      <h2><span class="tag">AMD</span>Models read and explain</h2>
+      <ul class="small" style="font-size:22px">
+        <li>MinerU2.5-Pro reads the region's signed PDF; DeepSeek-V4-Flash proposes each rule field with a verbatim quote.</li>
+        <li>Code accepts a field only if the quote is in the document and contains the value. The rest goes to a person.</li>
+        <li>DeepSeek explains each hand-off in Italian and English.</li>
+        <li>Gemma 4 writes the crew briefing (Gemini API, Google servers). Every number is checked against the plan.</li>
+      </ul>
+    </div>
+    <div class="box soft">
+      <h2>The supervisor confirms</h2>
+      <ul class="small" style="font-size:22px">
+        <li>Whether today is an ALTO day comes from worklimate.it, confirmed by the supervisor. Turno never guesses it.</li>
+        <li>Until confirmed, the ban is assumed.</li>
+        <li>Hours the forecast cannot settle are handed over, with what to check on site.</li>
+        <li>A compliance log records every hour's decision and its basis.</li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot"><span>Settings chosen on June 2026 days only, then tested on July and August (results/PREREGISTRATION.md)</span><span>Turno</span></div>
+</section>
+
+<!-- 5. what runs on AMD -->
+<section class="slide">
+  <p class="kicker amd">What runs on AMD</p>
+  <h1>AMD Token Factory reads the law and explains the hand-offs.</h1>
+  <div class="cols c2" style="margin-top:8px">
+    <div>
+      <div class="box amd" style="margin-bottom:28px">
+        <h2><span class="tag">RUNS ON AMD</span>Ordinance reader</h2>
+        <p class="small" style="font-size:24px">MinerU2.5-Pro OCR of the signed regional PDF, then DeepSeek-V4-Flash proposes every rule field with a quote. 16 regions issue and amend these orders every summer; Lazio did so three times in 2026.</p>
+      </div>
+      <div class="box amd">
+        <h2><span class="tag">RUNS ON AMD</span>Hand-off explanations</h2>
+        <p class="small" style="font-size:24px">DeepSeek-V4-Flash explains, in Italian and English, why an hour needs the supervisor and what to check on site.</p>
+      </div>
+    </div>
+    <div>
+      <div class="box" style="margin-bottom:28px">
+        <h2>Benchmark, live on the deployed app</h2>
+        <p class="small" style="font-size:24px">Re-read of the Puglia ordinance on 15 October 2026, AMD Token Factory:</p>
+        <p style="font-size:44px;font-weight:800;letter-spacing:-0.02em;margin:10px 0 4px">44.9 s OCR · 34.7 s extraction</p>
+        <p class="small muted" style="font-size:22px">6 of 7 fields verified against the text. Every AMD call is logged with model, latency, tokens and cost in results/amd_calls.jsonl.</p>
+      </div>
+      <div class="box ext">
+        <h2><span class="tag grey">NOT ON AMD</span>The crew briefing</h2>
+        <p class="small" style="font-size:24px">Gemma 4 (gemma-4-31b-it) writes it through Google's Gemini API, so it runs on Google's servers. One setting moves it to a Gemma endpoint on an AMD GPU unchanged.</p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Sources: README.md, results/ordinance_reader.md, results/amd_calls.jsonl</span><span>Turno</span></div>
+</section>
+
+<!-- 6. results -->
+<section class="slide">
+  <p class="kicker">Results</p>
+  <h1 style="font-size:64px;margin-bottom:12px">Fewer missed hours. Zero wrong rules accepted.</h1>
+  <p class="small muted" style="margin-bottom:34px">Pre-registered test set: 10 forecast dates, July and August 2026, 5 sites, working hours, heavy work, crew new to the heat. Settings chosen on June only.</p>
+  <div class="cols c2" style="grid-template-columns:1.25fr 1fr;margin-top:4px">
+    <div>
+      <h2>Missed heat-restricted hours (plan allowed more work than ERA5 did)</h2>
+      <table>
+        <tr><th>Lead (days)</th><th class="r">1</th><th class="r">2</th><th class="r">3</th><th class="r">4</th><th class="r">5</th></tr>
+        <tr><td>Single ECMWF forecast</td><td class="r">6.6%</td><td class="r">7.2%</td><td class="r">12.2%</td><td class="r">20.4%</td><td class="r">14.5%</td></tr>
+        <tr class="t-row"><td>Turno (ensemble + rules)</td><td class="r">1.1%</td><td class="r">0.6%</td><td class="r">3.9%</td><td class="r">4.4%</td><td class="r">3.9%</td></tr>
+        <tr><td class="muted">Hours handed to the supervisor</td><td class="r muted">3.0%</td><td class="r muted">8.5%</td><td class="r muted">14.5%</td><td class="r muted">17.0%</td><td class="r muted">16.5%</td></tr>
+      </table>
+      <p class="small muted" style="margin-top:20px">200 three-hourly working times per lead, about 180 of them heat-restricted. At lead 1 the ensemble cuts over-planned work six-fold (0.15 against 0.90 minutes per hour) for 0.9 more minutes of safe work withheld per hour.</p>
+    </div>
+    <div>
+      <h2>Ordinance reader on AMD, 10 single-document regions</h2>
+      <table>
+        <tr><th>Field</th><th class="r">Run 1</th><th class="r">Run 2</th><th class="r">Accepted and wrong</th></tr>
+        <tr><td>End of the ban season</td><td class="r">7 of 10</td><td class="r">8 of 10</td><td class="r"><b>0</b></td></tr>
+        <tr><td>Daily ban start</td><td class="r">8 of 10</td><td class="r">9 of 10</td><td class="r"><b>0</b></td></tr>
+        <tr><td>Daily ban end</td><td class="r">8 of 10</td><td class="r">9 of 10</td><td class="r"><b>0</b></td></tr>
+      </table>
+      <p class="small muted" style="margin-top:20px">Runs 1 and 2: fields accepted, all of them correct. Run 2 adds one re-ask when quotes are missing. Every field not accepted went to a person with the reason. All 5 regions with amended rules were flagged; 4 of 10 single orders were wrongly flagged too.</p>
+    </div>
+  </div>
+  <div class="foot"><span>Sources: results/grid_summary.md, results/ordinance_reader.md, results/ordinance_reader_run1.md, results/PREREGISTRATION.md</span><span>Turno</span></div>
+</section>
+
+<!-- 7. honesty -->
+<section class="slide">
+  <p class="kicker">Limitations, plainly</p>
+  <h1 style="font-size:64px">What did not happen, and what the numbers do not prove.</h1>
+  <div class="cols c2" style="margin-top:4px">
+    <ul>
+      <li class="lim"><b>Aurora on an AMD Instinct MI300X was the plan.</b> The event provides AMD's Token Factory model API and no GPU instances, and no GPU was available to us, so the forecast is ECMWF's open-data ensemble. No Aurora run happened.</li>
+      <li class="lim"><b>Gemma 4 runs on Google's servers</b>, through the Gemini API, so it runs on Google's servers.</li>
+      <li class="lim"><b>Truth is ERA5</b>, a 0.25 degree reanalysis; there is no thermometer on the site. A coastal town at 50 m in a cell averaging 544 m (Imperia) is a different place.</li>
+      <li class="lim"><b>The ensemble is too confident early in the day.</b> On 30 July in Rome all 10 members ran cooler than what happened at 08:00 and 09:00; the plan allowed 15 minutes more than reality would have in each hour. The app shows these hours as "plan too high".</li>
+    </ul>
+    <ul>
+      <li class="lim">ECMWF open data is 3-hourly; the app interpolates to each hour. The evaluation uses 3-hourly times.</li>
+      <li class="lim">The number check proves every number came from the plan; it does not prove that each sentence is right. Two live failures (an invented "31 C threshold", heat stops called "banned") are in the commit history with their fixes.</li>
+      <li class="lim">Model outputs vary between runs even at temperature 0; both reader runs are reported.</li>
+      <li class="lim">NIOSH limits are a US standard; Worklimate uses the same NIOSH alert-limit formula.</li>
+      <li class="lim">Not yet tried with a real crew. No substitute for the employer's risk assessment.</li>
+    </ul>
+  </div>
+  <div class="foot"><span>Source: README.md, Limitations</span><span>Turno</span></div>
+</section>
+
+<!-- 8. human plus AI -->
+<section class="slide">
+  <p class="kicker">The workflow</p>
+  <h1 style="font-size:64px">Who decides what. No model decides anything.</h1>
+  <table style="font-size:27px;margin-top:4px">
+    <tr><th style="width:34%">Step</th><th style="width:33%">Done by</th><th>Checked by</th></tr>
+    <tr><td>Heat stress (WBGT) per forecast member, per hour</td><td>Liljegren method, ECMWF thermofeel</td><td>Tests; solar inputs measured against ERA5</td></tr>
+    <tr><td>Minutes of work per hour</td><td>NIOSH 2016-106 limits as 1-hour averages, planned for the hard end of the workload</td><td>Tests; the equation matches NIOSH Table 5-1 to 0.1 C</td></tr>
+    <tr><td>Whether today is an ALTO day</td><td><b>The supervisor</b>, from worklimate.it</td><td>Until confirmed, the ban is assumed</td></tr>
+    <tr><td>Which ordinance applies</td><td>Rules built from 15 regions' primary texts; <span class="tag" style="font-size:14px">AMD</span>reader proposes updates with quotes</td><td>Verbatim text and URL per region; code accepts only quoted fields, the rest goes to a person</td></tr>
+    <tr><td>Hours the forecast cannot settle</td><td><b>The supervisor</b>, on site</td><td><span class="tag" style="font-size:14px">AMD</span>DeepSeek explains why and what to check</td></tr>
+    <tr><td>The words in the briefing and explanations</td><td>Gemma 4 (Google servers), DeepSeek on AMD</td><td>Every number must be in the plan; hour labels are fixed by the rules; on failure a template is used</td></tr>
+  </table>
+  <div class="foot"><span>Source: README.md, "No model decides anything"</span><span>Turno</span></div>
+</section>
+
+<!-- 9. links -->
+<section class="slide">
+  <p class="kicker">Links</p>
+  <h1 class="wordmark" style="font-size:160px">Turno</h1>
+  <div class="cols c2" style="margin-top:40px">
+    <div>
+      <p style="font-size:40px;font-weight:700">turno.aashanjaved.com</p>
+      <p class="muted small" style="margin-bottom:28px">The live app: replayed summer days at 5 sites, checked against ERA5, and tomorrow's live forecast.</p>
+      <p style="font-size:40px;font-weight:700">github.com/Aashan47/turno</p>
+      <p class="muted small">Code, data scripts, 64 tests, the pre-registration, every result file and every AMD call log. MIT licence.</p>
+    </div>
+    <div class="box soft">
+      <h2>Built with</h2>
+      <p class="small" style="font-size:24px">Python, FastAPI, ECMWF thermofeel, ECMWF open data and ERA5 (CC BY 4.0), NIOSH 2016-106, 15 regional ordinances quoted with URLs, AMD Token Factory (MinerU2.5-Pro, DeepSeek-V4-Flash), Gemma 4 through the Gemini API.</p>
+      <h2 style="margin-top:24px">Built when</h2>
+      <p class="small" style="font-size:24px">Before 12 October 2026: the WBGT and solar code, the NIOSH rules, the ordinance rules, the evaluation and the ECMWF baselines, all without any model. From 12 October: everything that calls a model, the web app and the deployment.</p>
+    </div>
+  </div>
+  <div class="foot"><span>Aashan Javed · AMD Developer Hackathon: ACT III, lablab.ai</span><span>Health and Wellbeing · Intelligent Industry</span></div>
+</section>
+
+</body>
+</html>

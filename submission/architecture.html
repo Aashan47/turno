@@ -1,0 +1,96 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Turno architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&display=swap" rel="stylesheet">
+<style>html,body{margin:0;width:1920px;height:1080px;overflow:hidden;background:#F4F5F2} svg{display:block}</style></head><body><svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" font-family="Bricolage Grotesque, system-ui, sans-serif">
+<title>Turno architecture</title>
+<style>@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&amp;display=swap');</style>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#1E1A15"/></marker></defs>
+<rect width="1920" height="1080" fill="#F4F5F2"/>
+<text x="80" y="64" font-size="34" font-weight="800" fill="#1E1A15" letter-spacing="-0.02em" font-family="Bricolage Grotesque, system-ui, sans-serif">Turno: how the pieces fit</text>
+<text x="80" y="94" font-size="18" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">Rules decide. Models read and explain. The supervisor confirms the rating. Every model output is checked by code before anyone sees it.</text>
+<rect x="1300" y="40" width="26" height="18" rx="4" fill="#F4F5F2" stroke="#C8102E" stroke-width="3"/><text x="1336" y="55" font-size="16" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">Runs on AMD Token Factory (AMD Radeon Cloud)</text>
+<rect x="1300" y="70" width="26" height="18" rx="4" fill="#F4F5F2" stroke="#6F6A61" stroke-width="2" stroke-dasharray="5 4"/><text x="1336" y="85" font-size="16" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">Model on another provider (Google)</text>
+<rect x="1300" y="100" width="26" height="18" rx="4" fill="#F4F5F2" stroke="#1E1A15" stroke-width="2"/><text x="1336" y="115" font-size="16" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">Code and fixed rules, no model</text>
+<rect x="80" y="150" width="440" height="74" rx="8" fill="#E9EAE5" stroke="#D8D6CE" stroke-width="2"/>
+<text x="300.0" y="181.5" text-anchor="middle" font-size="20" font-weight="700" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">ECMWF open-data ensemble</text>
+<text x="300.0" y="206.5" text-anchor="middle" font-size="18" font-weight="500" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">10 members, 0.25 degree, 3-hourly</text>
+<path d="M 300,224 L 300,262" fill="none" stroke="#1E1A15" stroke-width="2.2" marker-end="url(#ah)"/>
+<rect x="80" y="264" width="440" height="74" rx="8" fill="#F4F5F2" stroke="#1E1A15" stroke-width="2"/>
+<text x="300.0" y="295.5" text-anchor="middle" font-size="20" font-weight="700" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">WBGT per member, per hour</text>
+<text x="300.0" y="320.5" text-anchor="middle" font-size="18" font-weight="500" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">Liljegren method, ECMWF thermofeel</text>
+<path d="M 300,338 L 300,376" fill="none" stroke="#1E1A15" stroke-width="2.2" marker-end="url(#ah)"/>
+<rect x="80" y="378" width="440" height="98" rx="8" fill="#F4F5F2" stroke="#1E1A15" stroke-width="2"/>
+<text x="300.0" y="409.0" text-anchor="middle" font-size="20" font-weight="700" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">NIOSH work-minute rules</text>
+<text x="300.0" y="434.0" text-anchor="middle" font-size="18" font-weight="500" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">plan on the hottest member;</text>
+<text x="300.0" y="459.0" text-anchor="middle" font-size="18" font-weight="500" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">hand over when members are 30 min apart</text>
+<rect x="680" y="150" width="560" height="60" rx="8" fill="#E9EAE5" stroke="#D8D6CE" stroke-width="2"/>
+<text x="960.0" y="174.5" text-anchor="middle" font-size="20" font-weight="700" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">Regional ordinance PDF</text>
+<text x="960.0" y="199.5" text-anchor="middle" font-size="18" font-weight="500" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">signed by the region, amended during the summer</text>
+<path d="M 960,210 L 960,248" fill="none" stroke="#1E1A15" stroke-width="2.2" marker-end="url(#ah)"/>
+<rect x="600" y="268" width="720" height="126" rx="12" fill="none" stroke="#C8102E" stroke-width="2" stroke-dasharray="4 6"/>
+<text x="616" y="258" font-size="15" font-weight="800" fill="#C8102E" letter-spacing="0.04em" font-family="Bricolage Grotesque, system-ui, sans-serif">AMD TOKEN FACTORY</text>
+<rect x="620" y="290" width="320" height="86" rx="8" fill="#F4F5F2" stroke="#C8102E" stroke-width="3"/>
+<text x="780.0" y="327.5" text-anchor="middle" font-size="20" font-weight="700" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">MinerU2.5-Pro</text>
+<text x="780.0" y="352.5" text-anchor="middle" font-size="18" font-weight="500" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">OCR of the signed PDF</text>
+<rect x="632" y="277" width="150" height="26" rx="4" fill="#C8102E"/><text x="707" y="295" text-anchor="middle" font-size="14" font-weight="800" fill="#fff" letter-spacing="0.04em" font-family="Bricolage Grotesque, system-ui, sans-serif">RUNS ON AMD</text>
+<path d="M 940,333 L 978,333" fill="none" stroke="#1E1A15" stroke-width="2.2" marker-end="url(#ah)"/>
+<rect x="980" y="290" width="320" height="86" rx="8" fill="#F4F5F2" stroke="#C8102E" stroke-width="3"/>
+<text x="1140.0" y="327.5" text-anchor="middle" font-size="20" font-weight="700" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">DeepSeek-V4-Flash</text>
+<text x="1140.0" y="352.5" text-anchor="middle" font-size="18" font-weight="500" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">proposes each field with a quote</text>
+<rect x="992" y="277" width="150" height="26" rx="4" fill="#C8102E"/><text x="1067" y="295" text-anchor="middle" font-size="14" font-weight="800" fill="#fff" letter-spacing="0.04em" font-family="Bricolage Grotesque, system-ui, sans-serif">RUNS ON AMD</text>
+<path d="M 1140,376 L 1140,412" fill="none" stroke="#1E1A15" stroke-width="2.2" marker-end="url(#ah)"/>
+<rect x="980" y="414" width="320" height="84" rx="8" fill="#F4F5F2" stroke="#1E1A15" stroke-width="2"/>
+<text x="1140.0" y="438.0" text-anchor="middle" font-size="20" font-weight="700" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">Verbatim checks (code)</text>
+<text x="1140.0" y="463.0" text-anchor="middle" font-size="18" font-weight="500" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">the quote is found in the text,</text>
+<text x="1140.0" y="488.0" text-anchor="middle" font-size="18" font-weight="500" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">the value is found in the quote</text>
+<path d="M 980,456 L 942,456" fill="none" stroke="#1E1A15" stroke-width="2.2" marker-end="url(#ah)"/>
+<rect x="620" y="414" width="320" height="84" rx="8" fill="#F4F5F2" stroke="#1E1A15" stroke-width="2"/>
+<text x="780.0" y="438.0" text-anchor="middle" font-size="20" font-weight="700" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">Ordinance rules</text>
+<text x="780.0" y="463.0" text-anchor="middle" font-size="18" font-weight="500" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">accepted fields only;</text>
+<text x="780.0" y="488.0" text-anchor="middle" font-size="18" font-weight="500" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">the rest go to a person</text>
+<rect x="1400" y="150" width="440" height="98" rx="8" fill="#E9EAE5" stroke="#D8D6CE" stroke-width="2"/>
+<text x="1620.0" y="181.0" text-anchor="middle" font-size="20" font-weight="700" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">The supervisor</text>
+<text x="1620.0" y="206.0" text-anchor="middle" font-size="18" font-weight="500" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">confirms the Worklimate rating</text>
+<text x="1620.0" y="231.0" text-anchor="middle" font-size="18" font-weight="500" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">(ALTO or not), from worklimate.it</text>
+<rect x="760" y="560" width="400" height="96" rx="8" fill="#1E1A15" stroke="#1E1A15" stroke-width="3"/>
+<text x="960.0" y="590.0" text-anchor="middle" font-size="20" font-weight="700" fill="#F4F5F2" font-family="Bricolage Grotesque, system-ui, sans-serif">Hour plan</text>
+<text x="960.0" y="615.0" text-anchor="middle" font-size="18" font-weight="500" fill="#F4F5F2" font-family="Bricolage Grotesque, system-ui, sans-serif">minutes of work per hour, 07:00 to 19:00,</text>
+<text x="960.0" y="640.0" text-anchor="middle" font-size="18" font-weight="500" fill="#F4F5F2" font-family="Bricolage Grotesque, system-ui, sans-serif">the ban window, the hand-offs</text>
+<path d="M 300,476 L 300,608 L 758,608" fill="none" stroke="#1E1A15" stroke-width="2.2" marker-end="url(#ah)"/>
+<path d="M 780,498 L 780,558" fill="none" stroke="#1E1A15" stroke-width="2.2" marker-end="url(#ah)"/>
+<path d="M 1620,248 L 1620,528 L 960,528 L 960,558" fill="none" stroke="#1E1A15" stroke-width="2.2" marker-end="url(#ah)"/>
+<path d="M 860,656 L 860,700" fill="none" stroke="#1E1A15" stroke-width="2.2" marker-end="url(#ah)"/>
+<path d="M 1060,656 L 1060,678 L 1400,678 L 1400,700" fill="none" stroke="#1E1A15" stroke-width="2.2" marker-end="url(#ah)"/>
+<rect x="480" y="702" width="560" height="90" rx="8" fill="#F4F5F2" stroke="#C8102E" stroke-width="3"/>
+<text x="760.0" y="729.0" text-anchor="middle" font-size="20" font-weight="700" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">DeepSeek-V4-Flash</text>
+<text x="760.0" y="754.0" text-anchor="middle" font-size="18" font-weight="500" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">explains each hand-off: why this hour needs you,</text>
+<text x="760.0" y="779.0" text-anchor="middle" font-size="18" font-weight="500" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">what to check on site (Italian and English)</text>
+<rect x="492" y="689" width="150" height="26" rx="4" fill="#C8102E"/><text x="567" y="707" text-anchor="middle" font-size="14" font-weight="800" fill="#fff" letter-spacing="0.04em" font-family="Bricolage Grotesque, system-ui, sans-serif">RUNS ON AMD</text>
+<rect x="1120" y="702" width="560" height="90" rx="8" fill="#F4F5F2" stroke="#6F6A61" stroke-width="2" stroke-dasharray="8 6"/>
+<text x="1400.0" y="729.0" text-anchor="middle" font-size="20" font-weight="700" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">Gemma 4 (gemma-4-31b-it)</text>
+<text x="1400.0" y="754.0" text-anchor="middle" font-size="18" font-weight="500" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">writes the crew briefing through the Gemini API,</text>
+<text x="1400.0" y="779.0" text-anchor="middle" font-size="18" font-weight="500" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">on Google servers</text>
+<rect x="1132" y="689" width="150" height="26" rx="4" fill="#6F6A61"/><text x="1207" y="707" text-anchor="middle" font-size="14" font-weight="800" fill="#fff" letter-spacing="0.04em" font-family="Bricolage Grotesque, system-ui, sans-serif">NOT ON AMD</text>
+<path d="M 760,792 L 760,820 L 900,820 L 900,840" fill="none" stroke="#1E1A15" stroke-width="2.2" marker-end="url(#ah)"/>
+<path d="M 1400,792 L 1400,820 L 1020,820 L 1020,840" fill="none" stroke="#1E1A15" stroke-width="2.2" marker-end="url(#ah)"/>
+<rect x="780" y="842" width="360" height="60" rx="8" fill="#F4F5F2" stroke="#1E1A15" stroke-width="2"/>
+<text x="960.0" y="866.5" text-anchor="middle" font-size="20" font-weight="700" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">Number checks (code)</text>
+<text x="960.0" y="891.5" text-anchor="middle" font-size="18" font-weight="500" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">every number must be in the plan</text>
+<path d="M 960,902 L 960,940" fill="none" stroke="#1E1A15" stroke-width="2.2" marker-end="url(#ah)"/>
+<rect x="760" y="942" width="400" height="74" rx="8" fill="#F4F5F2" stroke="#1E1A15" stroke-width="2"/>
+<text x="960.0" y="973.5" text-anchor="middle" font-size="20" font-weight="700" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">What the crew sees</text>
+<text x="960.0" y="998.5" text-anchor="middle" font-size="18" font-weight="500" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">the strip, the briefing, the compliance log</text>
+<rect x="1400" y="842" width="300" height="60" rx="8" fill="#E9EAE5" stroke="#D8D6CE" stroke-width="2"/>
+<text x="1550.0" y="866.5" text-anchor="middle" font-size="20" font-weight="700" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">ERA5 reanalysis</text>
+<text x="1550.0" y="891.5" text-anchor="middle" font-size="18" font-weight="500" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">what actually happened</text>
+<path d="M 1550,902 L 1550,940" fill="none" stroke="#1E1A15" stroke-width="2.2" marker-end="url(#ah)"/>
+<path d="M 1160,608 L 1760,608 L 1760,940" fill="none" stroke="#1E1A15" stroke-width="2.2" marker-end="url(#ah)"/>
+<rect x="1400" y="942" width="440" height="74" rx="8" fill="#F4F5F2" stroke="#1E1A15" stroke-width="2"/>
+<text x="1620.0" y="973.5" text-anchor="middle" font-size="20" font-weight="700" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">Evaluation</text>
+<text x="1620.0" y="998.5" text-anchor="middle" font-size="18" font-weight="500" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">plan against ERA5: misses, hand-offs, minutes</text>
+<rect x="80" y="930" width="560" height="86" rx="8" fill="#E9EAE5"/>
+<text x="100" y="960" font-size="22" font-weight="800" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">No model decides anything.</text>
+<text x="100" y="984" font-size="16" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">Models read the law and write the words. Rules set the minutes.</text>
+<text x="100" y="1004" font-size="16" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">The supervisor sets the rating. Code checks every number.</text>
+<text x="80" y="1052" font-size="14" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">Forecast: ECMWF open data (CC BY 4.0). Truth: ERA5 (Copernicus). Limits: NIOSH 2016-106. Aurora on an AMD Instinct MI300X was the plan; no GPU instance was available at the event, so the forecast is the ECMWF ensemble.</text>
+</svg></body></html>
