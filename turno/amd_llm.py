@@ -33,8 +33,8 @@ def api_key() -> str:
         v = os.environ.get(name)
         if v:
             return v.strip().strip('"').strip("'")
-    env = Path(__file__).resolve().parents[5] / ".env"
-    if env.exists():
+    env = next((d / ".env" for d in Path(__file__).resolve().parents if (d / ".env").is_file()), None)
+    if env:
         for line in env.read_text().splitlines():
             k, _, v = line.partition("=")
             if k.strip().lower().removeprefix("export ").strip() == "token_factory_key" and v:

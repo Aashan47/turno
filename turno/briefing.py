@@ -23,7 +23,7 @@ from pathlib import Path
 
 import httpx
 
-ENV = Path(__file__).resolve().parents[5] / ".env"
+ENV = next((d / ".env" for d in Path(__file__).resolve().parents if (d / ".env").is_file()), Path("/nonexistent/.env"))
 LOG = Path(__file__).resolve().parent.parent / "results" / "gemma_calls.jsonl"
 
 SYSTEM = (
