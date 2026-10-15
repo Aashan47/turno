@@ -138,3 +138,11 @@ footer{max-width:1300px;margin:0 auto;padding:0 32px 36px;color:var(--muted);fon
   .legend{gap:10px}
   footer{padding:0 16px 30px}
 }
+
+details > summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:10px;color:var(--muted);font-size:15px;margin:6px 0}
+details > summary::-webkit-details-marker{display:none}
+details > summary::before{content:"";width:9px;height:9px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(-45deg);transition:transform .2s;flex:none}
+details[open] > summary::before{transform:rotate(45deg)}
+details > summary h2{margin:0;color:var(--ink)}
+details > summary:hover{color:var(--ink)}
+.prose details{margin-bottom:0}

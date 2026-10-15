@@ -47,11 +47,11 @@
   <figure class="strip">
     <svg id="strip" viewBox="0 0 1300 420" role="img" aria-label="The day, hour by hour: minutes of work, heat, the ban and the forecast spread"></svg>
     <figcaption class="legend">
-      <span><i class="sw heat"></i>Column height is minutes of work in the hour; colour is heat stress</span>
-      <span><i class="sw ban"></i>Banned by the regional ordinance</span>
-      <span><i class="sw hand"></i>Needs the supervisor</span>
-      <span><i class="sw band"></i>Forecast members, lowest to hottest</span>
-      <span class="t"><i class="sw truth"></i>What actually happened</span>
+      <span><i class="sw heat"></i>Minutes of work; colour is heat</span>
+      <span><i class="sw ban"></i>Banned by law</span>
+      <span><i class="sw hand"></i>Supervisor decides</span>
+      <span><i class="sw band"></i>Forecast spread</span>
+      <span class="t"><i class="sw truth"></i>What happened</span>
     </figcaption>
   </figure>
 
@@ -63,7 +63,7 @@
 <section class="two">
   <div class="block">
     <h2>Briefing for the crew</h2>
-    <p class="lead">Gemma 4 writes it from the plan in Italian and English. Every time and number is checked against the plan before it is shown; if one is not in the plan, a fixed wording is used instead.</p>
+    <p class="lead">Gemma 4 writes it in Italian and English. Every number is checked against the plan first.</p>
     <button class="btn" id="btn-brief">Write today's briefing</button>
     <div class="out" id="brief"></div>
     <p class="fine" id="brief-tag"></p>
@@ -77,26 +77,29 @@
 <section class="amd" id="amd-section">
   <div class="amd-head">
     <h2>Read on AMD</h2>
-    <p class="lead">Sixteen regions issue and amend these orders every summer. Turno reads each region's signed PDF on AMD Instinct GPUs through AMD Token Factory: MinerU reads the pages, DeepSeek proposes every field with a quote copied from the text, and code accepts a field only if that quote is really in the document and contains the value. Anything else goes to a person.</p>
+    <p class="lead">Regions rewrite these orders every summer. Models on AMD read each signed PDF and propose every rule with a quote from the text; code accepts only what the quote supports. The rest goes to a person.</p>
   </div>
   <div id="amd"></div>
 </section>
 
 <section class="block wide">
   <div class="row-h"><h2>Compliance log</h2><button class="btn ghost" id="btn-csv">Download CSV</button></div>
+  <details><summary>Show the day's log</summary>
   <table class="log" id="log"><thead><tr><th>Hour</th><th>Decision</th><th>Minutes</th><th>Basis</th></tr></thead><tbody></tbody></table>
+  </details>
 </section>
 
 <section id="how" class="prose">
-  <h2>How Turno decides</h2>
+  <details><summary><h2>How Turno decides</h2></summary>
   <p><b>The forecast.</b> ECMWF's ensemble, ten members, at the site's grid cell. Each member gives its own heat stress for every hour, as WBGT by the Liljegren method (ECMWF thermofeel).</p>
   <p><b>The limit.</b> NIOSH 2016-106: the Recommended Alert Limit for crews new to the heat, the Recommended Exposure Limit for acclimatized crews, as one-hour averages. An hour's work is the most of 60, 45, 30, 15 or 0 minutes that keeps the hour inside the limit, planned for the hard end of the work range.</p>
   <p><b>The plan follows the hottest member.</b> When members are 30 minutes of work or more apart, the hour goes to the supervisor with the reason. These two settings were chosen on June 2026 days only, then tested on July and August.</p>
   <p><b>The law.</b> The regional ordinance bans work 12:30 to 16:00 on days Worklimate rates ALTO. Turno never guesses that rating. Until the supervisor confirms it, the ban is assumed.</p>
   <p><b>The models.</b> Models on AMD read the ordinances and explain hand-offs; Gemma 4 writes the briefing. None of them decides anything, and every number they write is checked against the plan or the source text.</p>
+  </details>
 </section>
 
-<section id="evidence" class="prose"><h2>Evidence</h2><div id="evidence-body"><p>Loading.</p></div></section>
+<section id="evidence" class="prose"><details><summary><h2>Evidence</h2></summary><div id="evidence-body"><p>Loading.</p></div></details></section>
 
 </main>
 

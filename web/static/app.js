@@ -116,7 +116,7 @@ function strip(st, truthMin) {
     const [a, b] = ord.ban.split("-").map((t) => { const [hh, mm] = t.split(":").map(Number); return hh + mm / 60; });
     const xa = L + (a - hours[0]) * colW, xb = L + (b - hours[0]) * colW;
     s += `<rect x="${xa}" y="${TOP - 6}" width="${xb - xa}" height="${BASE - TOP + 6}" fill="var(--soft)" rx="4"/>`;
-    s += `<text x="${(xa + xb) / 2}" y="${TOP + BAND + GAP - 8}" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">${esc(ord.ban.replace("-", " to "))} ${st.alto === "alto" ? "banned today" : "banned on ALTO days"}</text>`;
+    s += `<text x="${(xa + xb) / 2}" y="${BASE + 38}" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">${esc(ord.ban.replace("-", " to "))} ${st.alto === "alto" ? "banned today" : "banned on ALTO days"}</text>`;
   }
 
   // Forecast band: min to max of the members, and the truth line.
@@ -150,7 +150,7 @@ function strip(st, truthMin) {
       const hMax = ym(60);
       bar = `<rect x="${x0}" y="${hMax}" width="${bw}" height="${BASE - hMax}" fill="none" stroke="var(--ink)" stroke-width="1.6" stroke-dasharray="5 4" rx="3"/>`
           + `<rect class="bar" x="${x0}" y="${FIRST_PAINT ? BASE : ym(h.work_minutes)}" width="${bw}" height="${FIRST_PAINT ? 0 : BASE - ym(h.work_minutes)}" fill="${heatColor(h.wbgt_c.max)}" rx="3"/>`
-          + `<text x="${cx(i)}" y="${hMax - 7}" text-anchor="middle" font-size="15" font-weight="800" fill="var(--ink)">?</text>`;
+          + `<text x="${cx(i)}" y="${hMax + 22}" text-anchor="middle" font-size="17" font-weight="800" fill="var(--ink)">?</text>`;
     } else {
       const col = h.work_minutes === 0 ? "var(--stop)" : heatColor(h.wbgt_c.max);
       const hgt = h.work_minutes === 0 ? 5 : BASE - ym(h.work_minutes);
@@ -205,9 +205,9 @@ function facts(st, truthMin, restricted, kept, over) {
     return;
   }
   $("#facts").innerHTML = `
-    <div><span class="k">Heat-restricted hours outside the 12:30 to 16:00 ban, this day</span><span class="v">${outside} of ${restricted}</span><span class="s">What actually happened. The ordinance alone leaves these uncovered; across the summer it is about two in three.</span></div>
-    <div><span class="k">Restricted hours the plan kept within the limit</span><span class="v ${kept === restricted ? "good" : ""}">${kept} of ${restricted}</span><span class="s">Planned the day before, checked against what happened.</span></div>
-    <div><span class="k">Hours the plan allowed too much work</span><span class="v ${over ? "bad" : "good"}">${over}</span><span class="s">Marked on the strip. Usually early-morning hours the forecast ran cool.</span></div>`;
+    <div><span class="k">Heat-restricted hours outside the 12:30 to 16:00 ban, this day</span><span class="v">${outside} of ${restricted}</span><span class="s">Hours the law alone leaves uncovered. About two in three, all summer.</span></div>
+    <div><span class="k">Restricted hours the plan kept within the limit</span><span class="v ${kept === restricted ? "good" : ""}">${kept} of ${restricted}</span><span class="s">Planned the day before.</span></div>
+    <div><span class="k">Hours the plan allowed too much work</span><span class="v ${over ? "bad" : "good"}">${over}</span><span class="s">Marked on the strip.</span></div>`;
 }
 
 function law() {
