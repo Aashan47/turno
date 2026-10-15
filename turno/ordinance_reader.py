@@ -148,7 +148,7 @@ def read(region: str, text: str, model: str = DEFAULT_MODEL) -> Reading:
     except json.JSONDecodeError:
         d = {}
     cost, latency = r.cost_usd, r.latency_s
-    if sum(isinstance(d.get(n), dict) and d[n].get("quote") for n in FIELDS) < len(FIELDS) // 2:
+    if sum(bool(isinstance(d.get(n), dict) and d[n].get("quote")) for n in FIELDS) < len(FIELDS) // 2:
         # One re-ask when the answer ignored the required format. No check is relaxed:
         # the second answer goes through exactly the same checks.
         r2 = chat(
