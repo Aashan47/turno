@@ -12,3 +12,4 @@ results/*.json
 data/ecmwf/
 results/grid_scores.jsonl
 data/init/
+data/ocr_liguria.md
