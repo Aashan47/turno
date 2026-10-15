@@ -60,10 +60,23 @@ unacclimatized limit.** A "miss" is an hour planned as more work than what actua
 Full table: `results/grid_summary.md`. At lead 1 the ensemble cuts over-planned work six-fold for 0.9 more
 minutes of safe work withheld per hour.
 
-**Ordinance reader** (`results/ordinance_reader.md`, run 1 kept as `ordinance_reader_run1.md`): on the 10
-regions whose rule is one document, **no field was accepted that disagrees with the verified record**. Fields
-it could not support with a quote went to a person. All 5 regions with amended rules were flagged as
-amending; 4 of 10 single orders were wrongly flagged too.
+**What the law alone leaves exposed** (`results/value.md`, ERA5, every working hour of June to August 2026 at
+the 5 sites): **59 to 66% of heat-restricted working hours fall outside the 12:30 to 16:00 ban window**, even
+counting the ban as if it applied every day (heavy work, not acclimatized: 3,444 of 5,239 hours). Those are the
+hours Turno plans and the ordinance does not touch. Each replayed day in the app shows the same count.
+
+**Ordinance reader on AMD** (`results/ordinance_reader.md`; run 1 kept as `ordinance_reader_run1.md`). On the 10
+regions whose rule is one document, scored against the verified records:
+
+| Field | Run 1: accepted, all correct | Run 2 (one re-ask when quotes are missing): accepted, all correct | Accepted and wrong, either run |
+|---|---|---|---|
+| End of the ban season | 7 of 10 | 8 of 10 | **0** |
+| Daily ban start | 8 of 10 | 9 of 10 | **0** |
+| Daily ban end | 8 of 10 | 9 of 10 | **0** |
+
+Every field not accepted went to a person with the reason. All 5 regions with amended rules were flagged as
+amending; 4 of 10 single orders were wrongly flagged too. A live re-read on the deployed app (Puglia, 15 October)
+took 44.9 s for MinerU OCR and 34.7 s for extraction on AMD Token Factory, and verified 6 of 7 fields.
 
 **Solar inputs** (`results/solar-validation.md`): top-of-atmosphere sunlight within 0.6% of ERA5; the
 direct-diffuse split costs 0.15 to 0.20 C of WBGT on average, 1.06 C at worst.
