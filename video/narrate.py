@@ -31,8 +31,22 @@ ENV = next((d / ".env" for d in HERE.parents if (d / ".env").is_file()), None)
 
 # gemini-2.5-flash-preview-tts speaks only the line and applies the direction; the
 # 3.8 models read the direction aloud (checked by transcribing the clips).
-MODEL = os.environ.get("TURNO_TTS_MODEL", "gemini-2.5-flash-preview-tts")
-VOICE = os.environ.get("TURNO_TTS_VOICE", "Charon")
+# Default voice since 16 Oct: Breeze TTS 2, open weights, run on this Mac with
+# MLX. Chosen on the Artificial Analysis Speech Arena (blind pairwise listener
+# votes): Elo 1219, the second open-weights model, above Gemini 3.1 Flash TTS;
+# Chatterbox sits near 1005 to 1035 on the same board. One reference clip made
+# by voice design keeps the speaker identical across every line, and every clip
+# is transcribed with Whisper and regenerated if the words drift from the cue.
+# Weights are under the BreezeBlue research and non-commercial licence.
+BACKEND = os.environ.get("TURNO_TTS_BACKEND", "breeze")  # breeze | gemini
+MODEL = os.environ.get("TURNO_TTS_MODEL", "mlx-community/Breeze-TTS-2-mlx" if BACKEND == "breeze" else "gemini-2.5-flash-preview-tts")
+VOICE = os.environ.get("TURNO_TTS_VOICE", "breeze-ref" if BACKEND == "breeze" else "Charon")
+BREEZE_REF = HERE / "breeze-ref.wav"
+BREEZE_REF_TEXT = ("Every summer, Italian regions ban outdoor work from half past twelve to four, on days the heat is "
+                   "rated high. A site supervisor still has to decide the rest of the day.")
+BREEZE_INSTRUCT = ("A calm man in his thirties talking a colleague through a screen. Natural pace, small pauses, "
+                   "relaxed, unhurried.")
+BREEZE_CFG, BREEZE_TRIES, MAX_WER = 4.0, 4, 0.12
 TEMPO = float(os.environ.get("TURNO_TTS_TEMPO", "1.0"))  # the directed read already sits near documentary pace
 STYLE = ("Read this as a site engineer calmly walking a colleague through a screen they are both looking at. "
          "Natural, unhurried, conversational. Breathe between sentences. Where a line has a pause marked with "
@@ -51,7 +65,6 @@ MUSIC = Path("/Users/aashanjaved/Desktop/Drive -D - Aashan/Research Assistant/Ha
 # thinking pause for the voice. One idea per line.
 CUES = [
     ("title", "This is Turno. Heat-safe shift planning for outdoor crews."),
-    ("title", "Built for the AMD Developer Hackathon, Act three."),
 
     ("open", "Every summer, Italian regions ban outdoor work from half past twelve to four... on days the heat is rated high."),
     ("open", "A site supervisor still has to decide the rest of the day, hour by hour, and prove the ban was kept."),
@@ -63,7 +76,7 @@ CUES = [
     ("strip", "The strip is the whole day. Each column is an hour."),
     ("strip", "Height is the minutes of work allowed. Colour is the heat. Above it, the forecast spread, and the black line is what really happened."),
 
-    ("toohigh", "Nine o'clock... hm. The forecast ran a little cool, so the plan allowed fifteen minutes, and reality allowed none."),
+    ("toohigh", "Nine o'clock... hmm. The forecast ran a little cool, so the plan allowed fifteen minutes, and reality allowed none."),
     ("toohigh", "Turno marks it as too high rather than hiding it. A plan you can audit is worth more than one that looks perfect."),
 
     ("alto", "Now the supervisor confirms the official rating for the day. High."),
@@ -130,7 +143,8 @@ def loudness(path: Path, seconds: float | None = None) -> float:
 
 
 def clip_path(text: str) -> Path:
-    key = hashlib.sha256(f"{MODEL}|{VOICE}|{TEMPO}|{PAUSE_KEEP}|{STYLE}|{text}".encode()).hexdigest()[:16]
+    ref = hashlib.sha256(BREEZE_REF.read_bytes()).hexdigest()[:8] if BACKEND == "breeze" else ""
+    key = hashlib.sha256(f"{BACKEND}|{MODEL}|{VOICE}|{ref}|{TEMPO}|{PAUSE_KEEP}|{STYLE}|{text}".encode()).hexdigest()[:16]
     return CLIPS / f"{key}.wav"
 
 
@@ -145,7 +159,84 @@ def normalise(src: Path, dest: Path, tempo: float = 1.0) -> None:
         f"loudnorm=I={VOICE_LUFS}:TP=-1.5:LRA=7", "-ar", "24000", "-ac", "1", str(dest)])
 
 
+_ONES = "zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen".split()
+_TENS = "x x twenty thirty forty fifty sixty seventy eighty ninety".split()
+_ORD = {"one": "first", "two": "second", "three": "third", "five": "fifth", "eight": "eighth", "nine": "ninth", "twelve": "twelfth"}
+
+
+def _num_words(n: int) -> str:
+    if n < 20:
+        return _ONES[n]
+    if n < 100:
+        return _TENS[n // 10] + ("" if n % 10 == 0 else " " + _ONES[n % 10])
+    return str(n)
+
+
+def _ordinal(n: int) -> str:
+    w = _num_words(n).split()
+    last = w[-1]
+    w[-1] = _ORD.get(last, last[:-1] + "ieth" if last.endswith("ty") else last + "th")
+    return " ".join(w)
+
+
+def words_of(text: str) -> list[str]:
+    """Spoken-word tokens: digits as words, so "15" and "fifteen" compare equal."""
+    t = text.lower().replace("%", " percent ").replace("-", " ")
+    t = re.sub(r"(\d+)(st|nd|rd|th)\b", lambda m: _ordinal(int(m.group(1))), t)
+    t = re.sub(r"(\d+)\.(\d+)", lambda m: f"{_num_words(int(m.group(1)))} point {' '.join(_ONES[int(c)] for c in m.group(2))}", t)
+    t = re.sub(r"\d+", lambda m: _num_words(int(m.group(0))), t)
+    return re.findall(r"[a-z']+", t)
+
+
+def wer(said: str, wanted: str) -> float:
+    import difflib
+    a, b = words_of(wanted), words_of(said)
+    matched = sum(bl.size for bl in difflib.SequenceMatcher(None, a, b).get_matching_blocks())
+    return (len(a) + len(b) - 2 * matched) / max(1, len(a))
+
+
+_breeze = None
+
+
+def synth_breeze(text: str, dest: Path) -> None:
+    global _breeze
+    import numpy as np
+    import mlx_whisper
+    if _breeze is None:
+        from mlx_audio.tts import load
+        _breeze = load(MODEL)
+    raw = dest.with_suffix(".raw.wav")
+    best = (9.9, None)
+    for seed in range(BREEZE_TRIES):
+        chunks = list(_breeze.generate(text=text, instruct=BREEZE_INSTRUCT, ref_audio=str(BREEZE_REF), ref_text=BREEZE_REF_TEXT,
+                                       cfg_scale=BREEZE_CFG, voice="S0", seed=seed))
+        audio = np.concatenate([np.array(c.audio, dtype=np.float32).reshape(-1) for c in chunks])
+        rate = chunks[0].sample_rate
+        cand = dest.with_name(f"{dest.stem}.try{seed}.wav")
+        with wave.open(str(cand), "wb") as w:
+            w.setnchannels(1); w.setsampwidth(2); w.setframerate(rate)
+            w.writeframes((np.clip(audio, -1, 1) * 32767).astype(np.int16).tobytes())
+        heard = mlx_whisper.transcribe(str(cand), path_or_hf_repo="mlx-community/whisper-large-v3-turbo")["text"].strip()
+        e = wer(heard, text)
+        print(f"      try {seed}: {len(audio) / rate:.1f}s, word error {e:.2f}" + ("" if e <= MAX_WER else f"  heard: {heard}"), flush=True)
+        if e < best[0]:
+            if best[1] is not None:
+                best[1].unlink()
+            best = (e, cand)
+        else:
+            cand.unlink()
+        if e <= MAX_WER:
+            break
+    if best[0] > MAX_WER:
+        raise SystemExit(f"the voice would not read this line faithfully after {BREEZE_TRIES} tries: {text}")
+    best[1].rename(raw)
+    normalise(raw, dest, TEMPO)
+    raw.unlink()
+
+
 def synth(text: str, dest: Path) -> None:
+    if BACKEND == "breeze":
+        return synth_breeze(text, dest)
     import httpx
     # The direction goes in the system instruction. Given inline with the line,
     # the model read the direction aloud: a nineteen word line came back as
@@ -195,7 +286,7 @@ def main() -> None:
     order = [b["id"] for b in beats]
     video_len = duration(VIDEO)
     CLIPS.mkdir(exist_ok=True)
-    print(f"voice {VOICE} on {MODEL}, tempo {TEMPO}")
+    print(f"voice {VOICE} on {MODEL} ({BACKEND}), tempo {TEMPO}")
     fresh = 0
     for _, text in CUES:
         if not clip_path(text).exists():
