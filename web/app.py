@@ -24,6 +24,7 @@ sys.path.insert(0, str(ROOT))
 
 from turno.briefing import write as write_briefing  # noqa: E402
 from turno.explain import explain  # noqa: E402
+from turno.ordinance_reader import ocr_pdf, read as read_ordinance  # noqa: E402
 
 WEB = Path(__file__).resolve().parent
 CACHE = ROOT / "results" / "live_cache"
@@ -63,6 +64,30 @@ def explain_hour(body: dict):
         raise HTTPException(400, "hour required")
     return JSONResponse(_cached("explain", {"hour": hour, "site": site, "date": day},
                                 lambda: explain(hour, site, day)))
+
+
+@app.post("/api/reread")
+def reread(body: dict):
+    """Re-read a region's signed ordinance PDF now, on AMD: MinerU OCR, then the
+    chat model, then the quote checks. Only regions in the fixed source list."""
+    region = str(body.get("region", ""))
+    sources = json.loads((WEB / "data" / "ordinance_sources.json").read_text())
+    if region not in sources:
+        raise HTTPException(404, "no signed PDF on record for this region")
+
+    def run():
+        import time
+        t0 = time.perf_counter()
+        text = ocr_pdf(sources[region], region.lower().replace("-", ""))
+        t_ocr = round(time.perf_counter() - t0, 1)
+        rd = read_ordinance(region, text)
+        return {"region": region, "at": time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime()), "model": rd.model, "ocr": "MinerU2.5-Pro on AMD Token Factory",
+                "ocr_seconds": t_ocr, "read_seconds": rd.latency_s, "cost_usd": rd.cost_usd,
+                "chars": len(text), "amends": rd.amends,
+                "fields": {n: {"value": c.value, "quote": c.quote, "accepted": c.accepted, "reason": c.reason}
+                           for n, c in rd.checks.items()}}
+
+    return JSONResponse(_cached("reread", {"region": region}, run))
 
 
 @app.get("/api/health")

@@ -34,7 +34,9 @@
     </fieldset>
   </div>
 
+  <ol class="guide"><li><b>Pick</b> a site, a day and the crew's work.</li><li><b>Confirm</b> today's official Worklimate rating (Turno never guesses it).</li><li><b>Read</b> the plan: minutes of work per hour, banned hours, and hours that need your decision.</li></ol>
   <div class="context" id="context"></div>
+  <div class="card value" id="value"></div>
 
   <div class="cards">
     <div class="card stat"><span class="k">Work allowed today</span><span class="v" id="s-work">-</span><span class="s" id="s-work-of"></span></div>
@@ -67,6 +69,12 @@
       <div class="card-h"><h2>Ordinance in force</h2><span class="tag amd">read on AMD</span></div>
       <div id="ord"></div>
     </div>
+  </div>
+
+  <div class="card amdcard">
+    <div class="card-h"><h2>On AMD: the ordinance reader</h2><span class="tag amd">AMD Token Factory</span></div>
+    <p class="hint">Rules change every summer. MinerU2.5-Pro reads the region's signed PDF and DeepSeek-V4-Flash proposes each field with a quote copied from it, both running on AMD. Code accepts a field only if the quote is really in the document and contains the value; everything else goes to a person.</p>
+    <div id="amd"></div>
   </div>
 
   <div class="card">

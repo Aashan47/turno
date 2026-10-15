@@ -1,7 +1,7 @@
 "use strict";
 const $ = (s) => document.querySelector(s);
 const WORK_W = { moderate: [234, 349], heavy: [350, 465], very_heavy: [466, 580] };
-let INDEX = null, DOC = null, PLAN = null, READER = null;
+let INDEX = null, DOC = null, PLAN = null, READER = null, SOURCES = {};
 
 function limitAt(workload, accl) {
   const m = WORK_W[workload][1];
@@ -20,6 +20,7 @@ async function init() {
     const d = r.ok ? await r.json() : null;
     READER = Array.isArray(d) ? d : null;
   } catch (e) { READER = null; }
+  try { const r = await fetch("/data/ordinance_sources.json"); SOURCES = r.ok ? await r.json() : {}; } catch (e) { SOURCES = {}; }
   $("#site").innerHTML = INDEX.sites.map((s) => `<option value="${s.key}">${esc(s.name)} (${esc(s.region)})</option>`).join("");
   $("#site").value = "roma";
   fillDays();
@@ -68,10 +69,10 @@ function render() {
     else pill = `<span class="pill p-part">${h.work_minutes} min / hour</span>`;
     const why = h.reasons.map(esc).join(" ");
     const btn = h.needs_supervisor ? `<br><button class="mini" data-h="${h.hour}">Explain (runs on AMD)</button><div class="exp" id="exp-${hh}"></div>` : "";
-    return `<tr><td class="num">${h.hour}</td><td>${pill}</td><td class="num">${h.work_minutes}</td>
-      <td class="num">${h.wbgt_c.min} to ${h.wbgt_c.max}</td>
-      <td class="num t">${tw !== undefined ? tw.toFixed(1) : "-"}</td>
-      <td class="num t ${isOver ? "over" : ""}">${tm !== undefined ? tm : "-"}${isOver ? " (plan too high)" : ""}</td>
+    return `<tr><td class="num" data-l="Hour">${h.hour}</td><td data-l="Decision">${pill}</td><td class="num" data-l="Work minutes">${h.work_minutes}</td>
+      <td class="num" data-l="Forecast WBGT C">${h.wbgt_c.min} to ${h.wbgt_c.max}</td>
+      <td class="num t" data-l="Happened C">${tw !== undefined ? tw.toFixed(1) : "-"}</td>
+      <td class="num t ${isOver ? "over" : ""}" data-l="Truth allowed">${tm !== undefined ? tm : "-"}${isOver ? " (plan too high)" : ""}</td>
       <td class="why">${why}${btn}</td></tr>`;
   });
   $("#hours tbody").innerHTML = rows.join("");
@@ -79,7 +80,53 @@ function render() {
   document.querySelectorAll("button.mini").forEach((b) => b.addEventListener("click", () => explain(b.dataset.h)));
   chart(st);
   ordinance();
+  amd();
   logTable();
+  value(st, truthMin);
+}
+
+function value(st, truthMin) {
+  const hrs = Object.keys(truthMin).map(Number);
+  const restricted = hrs.filter((h) => truthMin[h] < 60);
+  const outside = restricted.filter((h) => h < 12 || h > 15);
+  let protectedH = 0, over = 0;
+  PLAN.hours.forEach((p) => { const h = parseInt(p.hour); if (truthMin[h] < 60) { if (p.work_minutes <= truthMin[h]) protectedH++; else over++; } });
+  $("#value").innerHTML = `
+    <div><span class="k">Heat-restricted hours outside the 12:30 to 16:00 ban</span><span class="v">${outside.length} of ${restricted.length}</span>
+      <span class="s">What actually happened (ERA5). The ordinance alone does not cover these; across the summer it is about two in three.</span></div>
+    <div><span class="k">Restricted hours the plan kept within the limit</span><span class="v">${protectedH} of ${restricted.length}</span>
+      <span class="s">Planned the day before, checked against what happened.</span></div>
+    <div><span class="k">Hours the plan allowed too much work</span><span class="v ${over ? "bad" : "ok"}">${over}</span>
+      <span class="s">Shown in red in the table, never hidden. Usually early-morning hours the forecast ran cool.</span></div>`;
+}
+
+function amd() {
+  const reg = DOC.region;
+  const r = Array.isArray(READER) ? READER.find((x) => x.region === reg) : null;
+  const canReread = !!SOURCES[reg];
+  let html = "";
+  if (r) html += fieldsTable(r.fields, `${esc(r.model)} on AMD; source: ${esc(r.source)}; ${r.latency_s} s`);
+  else html += `<p class="hint">No stored reading for ${esc(reg)}.</p>`;
+  html += canReread
+    ? `<button id="btn-reread">Re-read ${esc(reg)}'s signed PDF now, on AMD</button><div id="reread" class="check"></div>`
+    : `<p class="hint">${esc(reg)} publishes its ordinance in a bulletin or web page rather than one signed PDF, so the stored reading above came from the saved primary text. Live re-reads run for the regions with a signed PDF (Liguria, Lombardia, Puglia, Sicilia, Calabria, Sardegna, Umbria): pick Imperia, Milano or Foggia.</p>`;
+  $("#amd").innerHTML = html;
+  if (canReread) $("#btn-reread").addEventListener("click", reread);
+}
+function fieldsTable(fields, caption) {
+  const rows = Object.entries(fields).map(([k, f]) => `<tr><td class="num">${esc(k)}</td><td>${esc(f.value ?? "")}</td>
+    <td>${f.accepted ? '<span class="pill p-work">verified</span>' : '<span class="pill p-hand">to a person</span>'}</td>
+    <td class="q">${esc(f.reason)}${f.quote ? `<br>&ldquo;${esc(String(f.quote).slice(0, 180))}${String(f.quote).length > 180 ? "..." : ""}&rdquo;` : ""}</td></tr>`).join("");
+  return `<p class="check">${caption}</p><div class="table-wrap"><table class="fields"><thead><tr><th>Field</th><th>Value</th><th>Check</th><th>Why, and the quote</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+async function reread() {
+  const reg = DOC.region;
+  $("#reread").innerHTML = `<span class="hint">Reading the PDF on AMD (MinerU, then DeepSeek). This takes 30 to 90 seconds...</span>`;
+  try {
+    const r = await (await fetch("/api/reread", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ region: reg }) })).json();
+    const ok = Object.values(r.fields).filter((f) => f.accepted).length, n = Object.keys(r.fields).length;
+    $("#reread").innerHTML = fieldsTable(r.fields, `Live re-read at ${esc(r.at)}: OCR ${r.ocr_seconds} s (${r.chars} characters), reading ${r.read_seconds} s, cost $${Number(r.cost_usd).toFixed(5)}. ${ok} of ${n} fields verified.`);
+  } catch (e) { $("#reread").innerHTML = `<span class="bad">The AMD call failed; the stored reading above is unchanged.</span>`; }
 }
 
 function chart(st) {
@@ -181,7 +228,7 @@ function md(text) {
 }
 async function evidence() {
   const parts = [];
-  for (const f of ["grid_summary.md", "ordinance_reader.md", "rule_sweep_june.md", "solar-validation.md"]) {
+  for (const f of ["value.md", "grid_summary.md", "ordinance_reader.md", "ordinance_reader_run1.md", "rule_sweep_june.md", "solar-validation.md"]) {
     try { const r = await fetch(`/evidence/${f}`); if (r.ok) parts.push(`<div class="card">${md(await r.text())}</div>`); } catch (e) {}
   }
   try {

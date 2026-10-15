@@ -121,7 +121,7 @@
    ]
   }
  ],
- "generated": "2026-10-15T16:17Z",
+ "generated": "2026-10-15T16:57Z",
  "forecast": "ECMWF open-data ensemble, 10 members, 0.25 degrees",
  "truth": "ERA5 hourly reanalysis (Copernicus, CC BY 4.0)"
 }

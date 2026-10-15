@@ -73,3 +73,29 @@ footer{max-width:1180px;margin:0 auto;padding:0 16px 30px;color:var(--muted);fon
   .top{flex-direction:column;align-items:flex-start}
   nav a{margin:0 14px 0 0}
 }
+
+.guide{display:flex;gap:10px;flex-wrap:wrap;list-style:none;counter-reset:g;padding:0;margin:0 0 12px}
+.guide li{counter-increment:g;flex:1 1 220px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:13px;color:var(--muted)}
+.guide li::before{content:counter(g);display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;margin-right:8px}
+.guide b{color:var(--ink)}
+.value{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;border-left:4px solid var(--accent)}
+.value .k{font-size:12px;color:var(--muted);font-weight:600;display:block}
+.value .v{font-size:22px;font-weight:700}
+.value .s{font-size:12px;color:var(--muted)}
+.fields td{font-size:13px}
+.fields .q{color:var(--muted);font-size:12px;max-width:520px}
+.amdcard{border-top:3px solid var(--amd)}
+@media (max-width:700px){
+  .value{grid-template-columns:1fr}
+  #hours thead{display:none}
+  #hours, #hours tbody, #hours tr, #hours td{display:block;width:100%}
+  #hours tr{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:10px;background:var(--card)}
+  #hours td{border:0;padding:3px 0}
+  #hours td[data-l]::before{content:attr(data-l);display:inline-block;min-width:118px;color:var(--muted);font-size:12px;font-family:Inter,system-ui,sans-serif}
+  #hours td.why{max-width:none;margin-top:6px;padding-top:6px;border-top:1px dashed var(--line)}
+  #hours td.why:empty{display:none}
+  .table-wrap{overflow:visible}
+  #log td.why{font-size:12px}
+  #chart{height:200px}
+}
+.v.bad{color:var(--stop)} .v.ok{color:var(--work)}

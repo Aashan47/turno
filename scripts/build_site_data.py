@@ -107,6 +107,14 @@ def main() -> int:
                                "lat": s.lat, "lon": s.lon, "days": sorted(site_days)})
         print(s.key, len(site_days), "days", flush=True)
     (OUT / "index.json").write_text(json.dumps(index, ensure_ascii=False, indent=1))
+    # The only documents the live "re-read on AMD" action may fetch: each region's own
+    # signed PDF, from the verified records. The server never takes a URL from a request.
+    sys.path.insert(0, str(ROOT / "scripts"))
+    from bench_ordinance_reader import OCR_REGIONS
+    recs = json.loads((ROOT / "data" / "ordinances_2026.json").read_text())
+    pdfs = {r["region"]: r["url"] for r in recs
+            if r["region"] in OCR_REGIONS and r["status"] == "VERIFIED_PRIMARY" and r.get("url", "").startswith("http")}
+    (OUT / "ordinance_sources.json").write_text(json.dumps(pdfs, indent=1))
     return 0
 
 
