@@ -147,7 +147,23 @@ def read(region: str, text: str, model: str = DEFAULT_MODEL) -> Reading:
         d = json.loads(r.text)
     except json.JSONDecodeError:
         d = {}
+    cost, latency = r.cost_usd, r.latency_s
+    if sum(isinstance(d.get(n), dict) and d[n].get("quote") for n in FIELDS) < len(FIELDS) // 2:
+        # One re-ask when the answer ignored the required format. No check is relaxed:
+        # the second answer goes through exactly the same checks.
+        r2 = chat(
+            [{"role": "system", "content": PROMPT}, {"role": "user", "content": text[:120_000]},
+             {"role": "assistant", "content": r.text},
+             {"role": "user", "content": "Your answer left out the quotes. Return every field as "
+                                         '{"value": ..., "quote": ...}, with each quote copied exactly from the text.'}],
+            model=model, max_tokens=2500, json_mode=True, task=f"ordinance:{region}:format-retry",
+        )
+        try:
+            d = json.loads(r2.text)
+        except json.JSONDecodeError:
+            pass
+        cost, latency = cost + r2.cost_usd, latency + r2.latency_s
     checks = {n: check_field(n, d.get(n), text) for n in FIELDS}
     am = d.get("amends_or_extends")
     amends = am.get("value") if isinstance(am, dict) else am if isinstance(am, bool) else None
-    return Reading(region, model, checks, amends, r.cost_usd, r.latency_s, d)
+    return Reading(region, model, checks, amends, cost, round(latency, 3), d)

@@ -24,3 +24,4 @@
 {"at": "2026-10-15T16:25:40Z", "task": "ordinance:Piemonte", "model": "DeepSeek-V4-Flash", "latency_s": 34.792, "prompt_tokens": 7322, "completion_tokens": 612, "cost_usd": 0.00119644}
 {"at": "2026-10-15T16:26:11Z", "task": "ordinance:Abruzzo", "model": "DeepSeek-V4-Flash", "latency_s": 31.475, "prompt_tokens": 5056, "completion_tokens": 436, "cost_usd": 0.00082992}
 {"at": "2026-10-15T16:26:34Z", "task": "ordinance:Marche", "model": "DeepSeek-V4-Flash", "latency_s": 23.121, "prompt_tokens": 4519, "completion_tokens": 537, "cost_usd": 0.00078302}
+{"at": "2026-10-15T16:33:09Z", "task": "ordinance:Lazio", "model": "DeepSeek-V4-Flash", "latency_s": 41.221, "prompt_tokens": 11965, "completion_tokens": 815, "cost_usd": 0.0019033}
