@@ -22,7 +22,7 @@ AMD Developer Hackathon: ACT III (lablab.ai, 12 to 18 October 2026). Tracks: **H
 Every call to AMD is logged with model, latency, tokens and cost in `results/amd_calls.jsonl`.
 
 **Gemma 4** (`gemma-4-31b-it`) writes the crew briefing, through Google's Gemini API, so it runs on
-Google's servers, not on AMD. It is behind one setting (`GEMMA_BACKEND=vllm`, `GEMMA_BASE_URL`) and moves to
+Google's servers. It is behind one setting (`GEMMA_BACKEND=vllm`, `GEMMA_BASE_URL`) and moves to
 a Gemma endpoint on an AMD GPU unchanged.
 
 **What we could not run on AMD.** The plan was to run the Aurora 1.5 weather foundation model on an AMD
