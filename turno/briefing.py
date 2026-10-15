@@ -28,11 +28,26 @@ LOG = Path(__file__).resolve().parent.parent / "results" / "gemma_calls.jsonl"
 
 SYSTEM = (
     "You write a short heat-safety briefing for an outdoor work crew, from a plan you are given as JSON. "
-    "Use only the times and numbers in the plan. Do not add advice the plan does not contain. Say plainly "
-    "which hours are banned, which need the supervisor's decision and why, and how many minutes per hour "
-    "the crew may work. Write the Italian version first, then the English version, under the headings "
-    "ITALIANO and ENGLISH. At most 120 words per language."
+    "Every hour has a 'label' computed by the planning rules, with an Italian version 'label_it'. Use those "
+    "labels as given and do not invent other categories: in particular, only hours labelled 'Banned by the "
+    "ordinance' are banned; an hour labelled 'Stop: heat over the limit' is a heat stop, not a ban. Use only "
+    "the times and numbers in the plan. Do not add advice the plan does not contain. Group hours with the "
+    "same label. Write the Italian version first, then the English version, under the headings ITALIANO "
+    "and ENGLISH. At most 120 words per language."
 )
+
+
+def label(h: dict) -> tuple[str, str]:
+    """The fixed wording for an hour, decided by the rules, never by the model."""
+    if h["outcome"] == "banned":
+        return "Banned by the ordinance", "Vietato dall'ordinanza"
+    if h["outcome"] == "undetermined":
+        return "Supervisor decides", "Decide il preposto"
+    if h["work_minutes"] == 0:
+        return "Stop: heat over the limit", "Stop: calore oltre il limite"
+    if h["work_minutes"] == 60:
+        return "Full work", "Lavoro pieno"
+    return f"{h['work_minutes']} minutes of work per hour", f"{h['work_minutes']} minuti di lavoro all'ora"
 
 
 def _env(name: str) -> str | None:
@@ -147,6 +162,7 @@ def template(plan: dict) -> str:
 def write(plan: dict) -> Briefing:
     backend = (_env("GEMMA_BACKEND") or "google").lower()
     model = _env("GEMMA_MODEL") or "gemma-4-31b-it"
+    plan = dict(plan, hours=[dict(h, label=label(h)[0], label_it=label(h)[1]) for h in plan["hours"]])
     plan_json = json.dumps(plan, ensure_ascii=False)
     t0 = time.perf_counter()
     try:
