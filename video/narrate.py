@@ -206,6 +206,44 @@ def main() -> None:
     placed.sort(key=lambda c: c["start"])
 
     room = {b: (at_of[order[i + 1]] if i + 1 < len(order) else scene) - at_of[b] for i, b in enumerate(order)}
+
+    # Dead picture is cut, not talked over. Where a beat held longer than its
+    # lines need (the page waiting for a model answer), the excess is removed
+    # from the take and every later beat moves up by the same amount.
+    cuts = []
+    for i, b in enumerate(order[:-1]):
+        spare = room[b] - needed[b] - 1.0
+        if spare > 2.5:
+            a = lead_in + at_of[b] + needed[b] + 0.6
+            cuts.append((a, a + spare))
+    if cuts:
+        expr = "+".join(f"between(t,{a:.3f},{z:.3f})" for a, z in cuts)
+        trimmed = HERE / "turno-demo-trimmed.mp4"
+        ff(["-i", str(VIDEO), "-vf", f"select='not({expr})',setpts=N/FRAME_RATE/TB", "-r", "30",
+            "-c:v", "libx264", "-preset", "slow", "-crf", "19", "-movflags", "+faststart", str(trimmed)])
+        removed_before = lambda t: sum(min(z, t) - a for a, z in cuts if a < t)  # noqa: E731
+        for b in order:
+            at_of[b] -= removed_before(lead_in + at_of[b])
+        scene -= sum(z - a for a, z in cuts)
+        # The raw take is kept; the trimmed one is what the voice goes onto.
+        raw = HERE / "turno-demo-raw.mp4"
+        if not raw.exists():
+            VIDEO.rename(raw)
+        else:
+            VIDEO.unlink()
+        trimmed.rename(VIDEO)
+        video_len = duration(VIDEO)
+        print(f"  cut {sum(z - a for a, z in cuts):.1f}s of waiting from {len(cuts)} beats; take is now {video_len:.1f}s")
+        placed, running, needed = [], {}, {}
+        for beat, text in CUES:
+            offset = running.get(beat, 0.0) + BREATH
+            secs = duration(clip_path(text))
+            placed.append({"beat": beat, "start": lead_in + at_of[beat] + offset, "secs": secs,
+                           "end": lead_in + at_of[beat] + offset + secs, "path": clip_path(text),
+                           "text": text.replace("...", ","), "words": len(text.split())})
+            running[beat] = offset + secs; needed[beat] = running[beat] + BREATH
+        placed.sort(key=lambda c: c["start"])
+        room = {b: (at_of[order[i + 1]] if i + 1 < len(order) else scene) - at_of[b] for i, b in enumerate(order)}
     faults, prev = [], None
     for c in placed:
         c["gap"] = c["start"] - (prev["end"] if prev else 0.0)

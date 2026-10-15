@@ -187,7 +187,11 @@ function showDetail(hour) {
   const nums = [`<div><b>${h.wbgt_c.min} to ${h.wbgt_c.max} C</b><span>forecast heat stress, lowest to hottest of ${h.wbgt_c.members} members</span></div>`,
     `<div><b>${h.work_minutes} min</b><span>planned, on the hottest member</span></div>`];
   if (tw !== undefined) nums.push(`<div><b>${tw.toFixed(1)} C</b><span>what happened</span></div><div><b class="${tm < h.work_minutes ? "bad" : ""}">${tm} min</b><span>what reality allowed</span></div>`);
-  const why = h.reasons.length ? h.reasons.map((r) => `<p class="why">${esc(r)}</p>`).join("") : `<p class="why">Every member keeps this hour inside the NIOSH limit for ${WORK_NAME[st.workload]}.</p>`;
+  const agreed = h.work_minutes === 60
+    ? `Every member keeps a full hour inside the NIOSH limit for ${WORK_NAME[st.workload]}.`
+    : h.work_minutes === 0 ? `Every member puts this hour over the NIOSH limit for ${WORK_NAME[st.workload]}, even for fifteen minutes.`
+    : `The members agree: ${h.work_minutes} minutes of work keeps this hour inside the NIOSH limit for ${WORK_NAME[st.workload]}.`;
+  const why = h.reasons.length ? h.reasons.map((r) => `<p class="why">${esc(r)}</p>`).join("") : `<p class="why">${agreed}</p>`;
   const explainBtn = h.needs_supervisor ? `<button class="btn ghost" id="btn-explain">Explain this hour (a model on AMD)</button><div class="exp" id="exp"></div>` : "";
   $("#detail").innerHTML = `<button class="close" aria-label="Close">&times;</button><h3>${hour}: ${title}</h3><div class="nums">${nums.join("")}</div>${why}${explainBtn}`;
   $("#detail").hidden = false;

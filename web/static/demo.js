@@ -45,7 +45,7 @@
       showSlate(`<div style="font-size:120px;font-weight:800;letter-spacing:-.03em;line-height:1">Turno</div>
         <div style="font-size:34px;margin-top:22px;max-width:30ch">Heat-safe shift planning for outdoor crews.</div>
         <div style="font-size:20px;color:var(--muted);margin-top:40px">AMD Developer Hackathon: ACT III</div>`);
-      mark("title"); await sleep(5500);
+      mark("title"); await sleep(12000);
 
       // Milan, 31 July 2026, heavy work, crew new to the heat.
       await choose("#site", "milano"); await sleep(500);
@@ -53,30 +53,30 @@
       await waitFor(() => /31 July/.test($("#where").textContent) && document.querySelectorAll("#strip .col").length > 5);
       await sleep(300);
       window.scrollTo({ top: 0 }); await hideSlate();
-      mark("open"); await sleep(9000);
+      mark("open"); await sleep(17500);
 
-      mark("verdict"); await sleep(9000);
+      mark("verdict"); await sleep(23000);
 
       await scrollTo($(".strip"), "center");
-      mark("strip"); await sleep(10000);
+      mark("strip"); await sleep(17500);
 
       // The hour the plan got wrong.
       await click($('#strip .col[data-h="09:00"]'));
       await waitFor(() => !$("#detail").hidden && /09:00/.test($("#detail").textContent));
       await scrollTo($("#detail"), "center");
-      mark("toohigh"); await sleep(10000);
+      mark("toohigh"); await sleep(18500);
 
       // Confirm the official rating: the law takes over the afternoon.
       await scrollTo($(".rating"), "center");
       await click(document.querySelector('input[name=alto][value=alto]').closest("label"));
       await waitFor(() => /banned by law/.test($("#verdict").textContent));
       await scrollTo($(".strip"), "center");
-      mark("alto"); await sleep(9000);
+      mark("alto"); await sleep(14000);
 
       await click($('#strip .col[data-h="14:00"]'));
       await waitFor(() => /14:00: Banned/.test($("#detail").textContent));
       await scrollTo($("#detail"), "center");
-      mark("banned"); await sleep(7000);
+      mark("banned"); await sleep(8500);
 
       // Before the rating is known, the same hours are the supervisor's.
       await scrollTo($(".rating"), "center");
@@ -85,14 +85,14 @@
       await click($('#strip .col[data-h="12:00"]'));
       await waitFor(() => /12:00: Your decision/.test($("#detail").textContent));
       await scrollTo($("#detail"), "center");
-      mark("decide"); await sleep(8000);
+      mark("decide"); await sleep(17000);
 
       // A model on AMD explains it, and the numbers are checked.
       await click($("#btn-explain"));
       await waitFor(() => /ENGLISH/.test($("#exp").textContent) || /failed/.test($("#exp").textContent), 60000);
       await scrollTo($("#exp"), "center");
       window.__demoFacts.explain = $("#exp").textContent.slice(0, 200);
-      mark("explain"); await sleep(12000);
+      mark("explain"); await sleep(16500);
 
       // Gemma writes the briefing.
       await scrollTo($("#btn-brief"), "center");
@@ -100,35 +100,35 @@
       await waitFor(() => /ENGLISH/.test($("#brief").textContent), 90000);
       await scrollTo($("#brief"), "center");
       window.__demoFacts.briefTag = $("#brief-tag").textContent;
-      mark("briefing"); await sleep(12000);
+      mark("briefing"); await sleep(13000);
 
       // The ordinance, read on AMD.
       await scrollTo($("#amd-section"), "start");
-      mark("law"); await sleep(8000);
+      mark("law"); await sleep(17000);
       await click($("#btn-reread"));
       await waitFor(() => /Live re-read/.test($("#reread").textContent) || /failed|unchanged/.test($("#reread").textContent), 240000);
       await scrollTo($("#reread"), "center");
       window.__demoFacts.reread = $("#reread").textContent.slice(0, 160);
-      mark("reread"); await sleep(12000);
+      mark("reread"); await sleep(15000);
 
       // Tomorrow, from the latest forecast run.
       window.scrollTo({ top: 0, behavior: "smooth" }); await sleep(900);
       await choose("#day", "live");
       await waitFor(() => /Tomorrow/.test($("#where").textContent) && document.querySelectorAll("#strip .col").length > 5, 60000);
       await sleep(400);
-      mark("live"); await sleep(9000);
+      mark("live"); await sleep(10000);
 
       // The evidence.
       const ev = $("#evidence details"); ev.open = true;
       await scrollTo($("#evidence"), "start");
-      mark("evidence"); await sleep(10000);
+      mark("evidence"); await sleep(18000);
 
       // Closing slate.
       showSlate(`<div style="font-size:64px;font-weight:800;letter-spacing:-.02em;line-height:1.05;max-width:22ch">The models read and explain. The rules decide. The supervisor has the last word.</div>
         <div style="font-size:26px;margin-top:36px;line-height:1.5">turno.aashanjaved.com<br>github.com/Aashan47/turno</div>
         <div style="font-size:18px;color:var(--muted);margin-top:30px;max-width:70ch">On AMD: the ordinance reader and the hand-off explanations, through AMD Token Factory. Forecast: ECMWF ensemble. What happened: ERA5. Limits: NIOSH 2016-106.</div>`);
       await sleep(900);
-      mark("close"); await sleep(9000);
+      mark("close"); await sleep(14500);
 
       window.__demoElapsed = +now().toFixed(3);
       window.__demoDone = true;
