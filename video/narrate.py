@@ -33,13 +33,14 @@ ENV = next((d / ".env" for d in HERE.parents if (d / ".env").is_file()), None)
 # 3.8 models read the direction aloud (checked by transcribing the clips).
 MODEL = os.environ.get("TURNO_TTS_MODEL", "gemini-2.5-flash-preview-tts")
 VOICE = os.environ.get("TURNO_TTS_VOICE", "Charon")
-TEMPO = float(os.environ.get("TURNO_TTS_TEMPO", "1.12"))  # 115 wpm as read, lifted toward 130
+TEMPO = float(os.environ.get("TURNO_TTS_TEMPO", "1.0"))  # the directed read already sits near documentary pace
 STYLE = ("Read this as a site engineer calmly walking a colleague through a screen they are both looking at. "
          "Natural, unhurried, conversational. Breathe between sentences. Where a line has a pause marked with "
          "three dots, pause briefly as if thinking. State facts plainly; never sell.")
 
 VOICE_LUFS, MUSIC_LUFS = -16.0, -34.0
 BREATH = 0.45
+PAUSE_KEEP = 0.9
 MAX_SILENCE, MIN_COVERAGE = 3.0, 0.72
 MUSIC = Path("/Users/aashanjaved/Desktop/Drive -D - Aashan/Research Assistant/Hackathons/Music for Reels/ES_Towntones - Dusty Decks.mp3")
 
@@ -126,15 +127,18 @@ def loudness(path: Path, seconds: float | None = None) -> float:
 
 
 def clip_path(text: str) -> Path:
-    key = hashlib.sha256(f"{MODEL}|{VOICE}|{TEMPO}|{STYLE}|{text}".encode()).hexdigest()[:16]
+    key = hashlib.sha256(f"{MODEL}|{VOICE}|{TEMPO}|{PAUSE_KEEP}|{STYLE}|{text}".encode()).hexdigest()[:16]
     return CLIPS / f"{key}.wav"
 
 
 def normalise(src: Path, dest: Path, tempo: float = 1.0) -> None:
     stretch = "" if abs(tempo - 1.0) < 0.005 else f"atempo={tempo:.4f},"
     ff(["-i", str(src), "-af",
+        # Leading silence goes; internal pauses are kept up to PAUSE_KEEP seconds.
+        # At 0.3 s the written pauses ("...", "hm") were cut and lines read at
+        # 150 to 220 words a minute; the breaths are the point of the direction.
         "silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.08"
-        ":stop_periods=-1:stop_threshold=-50dB:stop_silence=0.3," + stretch +
+        f":stop_periods=-1:stop_threshold=-50dB:stop_silence={PAUSE_KEEP}," + stretch +
         f"loudnorm=I={VOICE_LUFS}:TP=-1.5:LRA=7", "-ar", "24000", "-ac", "1", str(dest)])
 
 

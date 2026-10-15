@@ -24,7 +24,9 @@
     await sleep(800);
   }
   async function press() { cur.style.transform = "translate(-50%,-50%) scale(.7)"; await sleep(140); cur.style.transform = "translate(-50%,-50%)"; }
-  async function click(el) { await moveTo(el); await press(); el.click(); }
+  // dispatchEvent rather than el.click(): the strip's columns are SVG groups,
+  // and SVG elements have no click() method.
+  async function click(el) { await moveTo(el); await press(); el.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true })); }
   async function choose(sel, value) { const el = document.querySelector(sel); await moveTo(el); await press(); el.value = value; el.dispatchEvent(new Event("change")); }
   async function scrollTo(el, block = "start") { el.scrollIntoView({ behavior: "smooth", block }); await sleep(900); }
   const waitFor = async (fn, ms = 30000) => { const t = performance.now(); while (!fn()) { if (performance.now() - t > ms) throw new Error("waited too long for " + fn); await sleep(100); } };
