@@ -13,6 +13,8 @@ from __future__ import annotations
 import hashlib
 import json
 import sys
+import threading
+import time
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
@@ -66,28 +68,54 @@ def explain_hour(body: dict):
                                 lambda: explain(hour, site, day)))
 
 
+# Re-reads take 30 to 120 seconds and AMD's OCR sometimes answers 502, so a re-read
+# runs as a background job: POST starts it, GET reports it. One job per region at a
+# time; a finished result is kept and shown with the time it ran.
+_JOBS: dict[str, dict] = {}
+_LOCK = threading.Lock()
+
+
+def _reread_job(region: str, url: str) -> None:
+    t0 = time.perf_counter()
+    try:
+        text = ocr_pdf(url, region.lower().replace("-", ""))
+        t_ocr = round(time.perf_counter() - t0, 1)
+        rd = read_ordinance(region, text)
+        out = {"status": "done", "region": region, "at": time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime()),
+               "model": rd.model, "ocr": "MinerU2.5-Pro on AMD Token Factory", "ocr_seconds": t_ocr,
+               "read_seconds": rd.latency_s, "cost_usd": rd.cost_usd, "chars": len(text), "amends": rd.amends,
+               "fields": {n: {"value": c.value, "quote": c.quote, "accepted": c.accepted, "reason": c.reason}
+                          for n, c in rd.checks.items()}}
+        (CACHE / f"reread-{region}.json").write_text(json.dumps(out, ensure_ascii=False))
+    except Exception as e:  # shown to the user; the stored reading is kept
+        out = {"status": "error", "region": region, "message": f"{type(e).__name__}: {str(e)[:160]}"}
+    with _LOCK:
+        _JOBS[region] = out
+
+
 @app.post("/api/reread")
-def reread(body: dict):
-    """Re-read a region's signed ordinance PDF now, on AMD: MinerU OCR, then the
-    chat model, then the quote checks. Only regions in the fixed source list."""
+def reread_start(body: dict):
+    """Re-read a region's signed ordinance PDF now, on AMD. Only regions in the fixed source list."""
     region = str(body.get("region", ""))
     sources = json.loads((WEB / "data" / "ordinance_sources.json").read_text())
     if region not in sources:
         raise HTTPException(404, "no signed PDF on record for this region")
+    with _LOCK:
+        if _JOBS.get(region, {}).get("status") == "running":
+            return JSONResponse(_JOBS[region])
+        _JOBS[region] = {"status": "running", "region": region, "started": time.time()}
+    threading.Thread(target=_reread_job, args=(region, sources[region]), daemon=True).start()
+    return JSONResponse(_JOBS[region])
 
-    def run():
-        import time
-        t0 = time.perf_counter()
-        text = ocr_pdf(sources[region], region.lower().replace("-", ""))
-        t_ocr = round(time.perf_counter() - t0, 1)
-        rd = read_ordinance(region, text)
-        return {"region": region, "at": time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime()), "model": rd.model, "ocr": "MinerU2.5-Pro on AMD Token Factory",
-                "ocr_seconds": t_ocr, "read_seconds": rd.latency_s, "cost_usd": rd.cost_usd,
-                "chars": len(text), "amends": rd.amends,
-                "fields": {n: {"value": c.value, "quote": c.quote, "accepted": c.accepted, "reason": c.reason}
-                           for n, c in rd.checks.items()}}
 
-    return JSONResponse(_cached("reread", {"region": region}, run))
+@app.get("/api/reread/{region}")
+def reread_status(region: str):
+    with _LOCK:
+        job = _JOBS.get(region)
+    if job:
+        return JSONResponse(job)
+    f = CACHE / f"reread-{region}.json"
+    return JSONResponse(json.loads(f.read_text()) if f.exists() else {"status": "none", "region": region})
 
 
 @app.get("/api/health")

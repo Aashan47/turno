@@ -121,13 +121,23 @@ function fieldsTable(fields, caption) {
 }
 async function reread() {
   const reg = DOC.region;
-  $("#reread").innerHTML = `<span class="hint">Reading the PDF on AMD (MinerU, then DeepSeek). This takes 30 to 90 seconds...</span>`;
+  const say = (h) => { if (DOC.region === reg) $("#reread").innerHTML = h; };
+  say(`<span class="hint">Reading the signed PDF on AMD: MinerU, then DeepSeek, then the quote checks. 30 to 120 seconds...</span>`);
   try {
-    const r = await (await fetch("/api/reread", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ region: reg }) })).json();
-    const ok = Object.values(r.fields).filter((f) => f.accepted).length, n = Object.keys(r.fields).length;
-    $("#reread").innerHTML = fieldsTable(r.fields, `Live re-read at ${esc(r.at)}: OCR ${r.ocr_seconds} s (${r.chars} characters), reading ${r.read_seconds} s, cost $${Number(r.cost_usd).toFixed(5)}. ${ok} of ${n} fields verified.`);
-  } catch (e) { $("#reread").innerHTML = `<span class="bad">The AMD call failed; the stored reading above is unchanged.</span>`; }
+    await fetch("/api/reread", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ region: reg }) });
+    for (let i = 0; i < 80; i++) {
+      await new Promise((r) => setTimeout(r, 3000));
+      const r = await (await fetch(`/api/reread/${encodeURIComponent(reg)}`)).json();
+      if (r.status === "running") { say(`<span class="hint">Still reading on AMD (${3 * (i + 1)} s)...</span>`); continue; }
+      if (r.status === "error") { say(`<span class="bad">AMD's service failed this time (${esc(r.message)}). The stored reading above is unchanged; try again in a minute.</span>`); return; }
+      const ok = Object.values(r.fields).filter((f) => f.accepted).length, n = Object.keys(r.fields).length;
+      say(fieldsTable(r.fields, `Live re-read at ${esc(r.at)}: OCR ${r.ocr_seconds} s (${r.chars} characters), reading ${r.read_seconds} s, cost $${Number(r.cost_usd).toFixed(5)}. ${ok} of ${n} fields verified.`));
+      return;
+    }
+    say(`<span class="bad">No answer from AMD within 4 minutes; the stored reading above is unchanged.</span>`);
+  } catch (e) { say(`<span class="bad">The AMD call failed; the stored reading above is unchanged.</span>`); }
 }
+
 
 function chart(st) {
   const svg = $("#chart"), W = 860, H = 260, L = 40, R = 10, T = 12, B = 28;
