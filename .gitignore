@@ -13,3 +13,6 @@ data/ecmwf/
 results/grid_scores.jsonl
 data/init/
 data/ocr_liguria.md
+results/live_cache/
+data/web.log
+data/bench_ordinance.log

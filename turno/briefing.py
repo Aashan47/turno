@@ -93,13 +93,23 @@ def allowed_tokens(plan: dict) -> set[str]:
         for m in (h["work_minutes"], *h.get("work_minutes_range", [])):
             out.add(str(m))
             out.add(str(60 - int(m)))
+        # Temperatures pass only as the exact values in the plan. A rounded
+        # temperature is how a model slips in a "31 C threshold" that exists
+        # nowhere, so rounded forms are not allowed.
         w = h.get("wbgt_c", {})
         for k in ("min", "median", "max"):
             if k in w:
                 out.add(f"{w[k]:.1f}")
-                out.add(str(round(w[k])))
     for t in plan.get("ban_window", []):
         out.update({t, t.replace(":", "."), str(int(t[:2]))})
+    # Any number that appears anywhere in the plan it was given, including the
+    # reasons' text (ordinance times and numbers) and the member count.
+    for tok in re.findall(r"\d{1,2}[:.]\d{2}|\d+(?:\.\d+)?", json.dumps({k: v for k, v in plan.items() if k != "hours"}
+                                                                   | {"reasons": [h.get("reasons") for h in plan.get("hours", [])],
+                                                                      "members": [h.get("wbgt_c", {}).get("members") for h in plan.get("hours", [])]},
+                                                                   ensure_ascii=False)):
+        out.add(tok)
+        out.add(tok.replace(".", ":") if re.fullmatch(r"\d{1,2}\.\d{2}", tok) else tok)
     d = plan.get("date", "")
     if d:
         y, mo, dd = d.split("-")

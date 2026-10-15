@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Turno: heat-safe shift planning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="logo">T</span><div><h1>Turno</h1><p>Heat-safe shift planning for outdoor crews</p></div></div>
+  <nav><a href="#plan" class="on">Plan</a><a href="#how">How it decides</a><a href="#evidence">Evidence</a></nav>
+</header>
+
+<main>
+<section id="plan">
+  <div class="controls card">
+    <label>Site<select id="site"></select></label>
+    <label>Day<select id="day"></select></label>
+    <label>Work<select id="workload">
+      <option value="moderate">Moderate (234 to 349 W)</option>
+      <option value="heavy" selected>Heavy (350 to 465 W)</option>
+      <option value="very_heavy">Very heavy (466 to 580 W)</option></select></label>
+    <label>Crew<select id="accl">
+      <option value="unaccl" selected>Not acclimatized (NIOSH RAL)</option>
+      <option value="accl">Acclimatized (NIOSH REL)</option></select></label>
+    <fieldset class="alto">
+      <legend>Today's official Worklimate rating at 12:00 <a id="wl-link" href="https://www.worklimate.it/scelta-mappa/sole-attivita-fisica-alta/" target="_blank" rel="noopener">check it</a></legend>
+      <label><input type="radio" name="alto" value="unconfirmed" checked> Not checked yet</label>
+      <label><input type="radio" name="alto" value="alto"> ALTO</label>
+      <label><input type="radio" name="alto" value="not_alto"> Not ALTO</label>
+    </fieldset>
+  </div>
+
+  <div class="context" id="context"></div>
+
+  <div class="cards">
+    <div class="card stat"><span class="k">Work allowed today</span><span class="v" id="s-work">-</span><span class="s" id="s-work-of"></span></div>
+    <div class="card stat ban"><span class="k">Hours banned by ordinance</span><span class="v" id="s-ban">-</span></div>
+    <div class="card stat hand"><span class="k">Hours for the supervisor</span><span class="v" id="s-hand">-</span></div>
+    <div class="card stat truth"><span class="k">Hours the plan over-allowed (vs what happened)</span><span class="v" id="s-over">-</span></div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h2>Heat stress through the day</h2><span class="hint">Thin lines: forecast members. Dark line: what actually happened (ERA5). Shaded: ordinance window.</span></div>
+    <svg id="chart" viewBox="0 0 860 260" preserveAspectRatio="none"></svg>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h2>The plan, hour by hour</h2>
+      <label class="toggle"><input type="checkbox" id="show-truth" checked> Show what happened</label></div>
+    <div class="table-wrap"><table id="hours"><thead><tr>
+      <th>Hour</th><th>Decision</th><th>Work min</th><th>WBGT forecast (C)</th><th class="t">Happened (C)</th><th class="t">Allowed by truth</th><th>Why</th>
+    </tr></thead><tbody></tbody></table></div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-h"><h2>Crew briefing</h2><span class="tag" id="brief-tag">Gemma 4</span></div>
+      <p class="hint">Gemma writes it from the plan. Every time and number is checked against the plan; if one is not, the fixed template is used.</p>
+      <button id="btn-brief">Write today's briefing</button>
+      <pre id="brief" class="out"></pre>
+    </div>
+    <div class="card">
+      <div class="card-h"><h2>Ordinance in force</h2><span class="tag amd">read on AMD</span></div>
+      <div id="ord"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-h"><h2>Compliance log</h2><button id="btn-csv" class="ghost">Download CSV</button></div>
+    <div class="table-wrap"><table id="log"><thead><tr><th>Hour</th><th>Decision</th><th>Minutes</th><th>Basis</th></tr></thead><tbody></tbody></table></div>
+  </div>
+</section>
+
+<section id="how" class="card prose hidden">
+  <h2>How Turno decides</h2>
+  <ol>
+    <li><b>Forecast.</b> The ECMWF open-data ensemble, 10 members, at the site's 0.25 degree cell. Each member gives its own hourly heat stress (WBGT, Liljegren method via ECMWF thermofeel). ECMWF open data is 3-hourly; hours between are interpolated linearly.</li>
+    <li><b>Limits.</b> NIOSH 2016-106: the Recommended Alert Limit for unacclimatized workers, the Recommended Exposure Limit for acclimatized ones, as 1-hour averages. An hour's work is the largest of 60, 45, 30, 15 or 0 minutes that keeps the hour within the limit, planned for the hard end of the workload range.</li>
+    <li><b>Cautious plan, human decision.</b> The plan follows the hottest of the 10 members. When members are 30 minutes or more apart, the hour goes to the supervisor with the reason. Settings were chosen on June 2026 dates only and tested on July and August.</li>
+    <li><b>Law.</b> The regional ordinance bans work 12:30 to 16:00 on days Worklimate rates "ALTO". Turno never guesses that rating: the supervisor confirms it. Until then the ban is assumed.</li>
+    <li><b>Models.</b> Models on AMD (Token Factory) read each region's ordinance PDF and explain hand-offs; Gemma 4 writes the briefing. Neither decides anything: every value they write is checked against the plan or the source text.</li>
+  </ol>
+</section>
+
+<section id="evidence" class="hidden">
+  <div class="card prose" id="evidence-body"><p>Loading evidence.</p></div>
+</section>
+</main>
+
+<footer>Forecast: ECMWF open data (CC BY 4.0). Truth: ERA5 (Copernicus, CC BY 4.0). Limits: NIOSH 2016-106. A planning aid for supervisors; it does not replace the employer's risk assessment or the official Worklimate rating.</footer>
+<script src="/static/app.js"></script>
+</body>
+</html>
