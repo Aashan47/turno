@@ -86,7 +86,7 @@ def _reread_job(region: str, url: str) -> None:
                "model": rd.model, "ocr": "MinerU2.5-Pro on AMD Token Factory", "ocr_seconds": t_ocr,
                "read_seconds": rd.latency_s, "cost_usd": rd.cost_usd, "chars": len(text), "amends": rd.amends,
                "fields": {n: {"value": c.value, "quote": c.quote, "accepted": c.accepted, "reason": c.reason}
-                          for n, c in rd.checks.items()}}
+                          for n, c in rd.checks.items()}, "finished": time.time()}
         (CACHE / f"reread-{region}.json").write_text(json.dumps(out, ensure_ascii=False))
     except Exception as e:  # shown to the user; the stored reading is kept
         out = {"status": "error", "region": region, "message": f"{type(e).__name__}: {str(e)[:160]}"}
@@ -102,8 +102,13 @@ def reread_start(body: dict):
     if region not in sources:
         raise HTTPException(404, "no signed PDF on record for this region")
     with _LOCK:
-        if _JOBS.get(region, {}).get("status") == "running":
-            return JSONResponse(_JOBS[region])
+        job = _JOBS.get(region) or {}
+        if job.get("status") == "running":
+            return JSONResponse(job)
+        # A reading finished in the last ten minutes is still that reading; do not
+        # spend a second run of AMD's OCR on the same PDF.
+        if job.get("status") == "done" and time.time() - job.get("finished", 0) < 600 and not body.get("force"):
+            return JSONResponse(job)
         _JOBS[region] = {"status": "running", "region": region, "started": time.time()}
     threading.Thread(target=_reread_job, args=(region, sources[region]), daemon=True).start()
     return JSONResponse(_JOBS[region])
@@ -169,8 +174,11 @@ def _asset_version() -> str:
 
 
 @app.get("/")
-def index():
+def index(demo: int = 0):
     html = (WEB / "static" / "index.html").read_text()
     v = _asset_version()
     html = html.replace('/static/style.css"', f'/static/style.css?v={v}"').replace('/static/app.js"', f'/static/app.js?v={v}"')
+    if demo:
+        # The recording scene drives the real page; it is only ever loaded on request.
+        html = html.replace("</body>", f'<script src="/static/demo.js?v={v}"></script></body>')
     return HTMLResponse(html, headers={"Cache-Control": "no-cache, must-revalidate"})

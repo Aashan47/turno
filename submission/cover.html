@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Turno cover</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#F4F5F2;--ink:#1E1A15;--muted:#6F6A61;--rule:#D8D6CE;--soft:#E9EAE5;
+  --cool:#7FA6BC;--warm:#E4B94A;--hot:#EE6A2C;--danger:#B9231C;--stop:#5A0E12;--amd:#C8102E}
+*{box-sizing:border-box}
+html,body{margin:0;width:1920px;height:1080px;overflow:hidden}
+body{background:var(--paper);color:var(--ink);font-family:"Bricolage Grotesque",system-ui,sans-serif;font-variant-numeric:tabular-nums}
+.page{position:relative;width:1920px;height:1080px;padding:96px 120px}
+.wordmark{font-size:168px;font-weight:800;letter-spacing:-0.045em;line-height:.9;margin:0;font-variation-settings:"opsz" 96}
+.tag{font-size:46px;font-weight:500;letter-spacing:-0.015em;margin:28px 0 0;color:var(--ink)}
+.strip{position:absolute;left:120px;right:120px;bottom:168px;margin:0}
+.strip svg{width:100%;height:auto;display:block}
+.legend{position:absolute;left:120px;bottom:92px;display:flex;gap:34px;font-size:22px;color:var(--muted)}
+.legend i{display:inline-block;width:26px;height:16px;border-radius:3px;margin-right:10px;vertical-align:-1px}
+.sw-heat{background:linear-gradient(90deg,var(--cool),var(--warm),var(--hot),var(--danger))}
+.sw-ban{background:repeating-linear-gradient(135deg,var(--ink) 0 3px,transparent 3px 8px)}
+.sw-hand{border:2px dashed var(--ink);background:transparent}
+.event{position:absolute;right:120px;bottom:92px;font-size:22px;color:var(--muted);text-align:right}
+.event b{color:var(--ink);font-weight:700}
+</style>
+</head>
+<body>
+<div class="page">
+  <h1 class="wordmark">Turno</h1>
+  <p class="tag">Heat-safe shift planning for outdoor crews</p>
+
+  <figure class="strip">
+    <svg viewBox="0 0 1680 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A working day in thirteen columns, 07 to 19. Column height is minutes of work per hour, colour is heat, hatched columns are banned by law, dashed outlines go to the supervisor.">
+<defs><pattern id="hatch" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="12" height="12" fill="#F4F5F2"/><rect width="4.4" height="12" fill="#1E1A15"/></pattern></defs>
+<rect x="754.5" y="0" width="430.5" height="356" fill="#E9EAE5" rx="6"/>
+<text x="969.75" y="404" text-anchor="middle" font-size="22" font-weight="700" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">12:30 to 16:00 banned by law</text>
+<line x1="78" x2="1677" y1="265" y2="265" stroke="#D8D6CE" stroke-width="1.5"/>
+<text x="64" y="272" text-anchor="end" font-size="19" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">15</text>
+<line x1="78" x2="1677" y1="190" y2="190" stroke="#D8D6CE" stroke-width="1.5"/>
+<text x="64" y="197" text-anchor="end" font-size="19" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">30</text>
+<line x1="78" x2="1677" y1="115" y2="115" stroke="#D8D6CE" stroke-width="1.5"/>
+<text x="64" y="122" text-anchor="end" font-size="19" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">45</text>
+<line x1="78" x2="1677" y1="40" y2="40" stroke="#D8D6CE" stroke-width="1.5"/>
+<text x="64" y="47" text-anchor="end" font-size="19" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">60</text>
+<text x="64" y="347" text-anchor="end" font-size="19" fill="#6F6A61" font-family="Bricolage Grotesque, system-ui, sans-serif">min</text>
+<rect x="94.5" y="40" width="90" height="300" rx="5" fill="#7FA6BC"/>
+<text x="139.5" y="26" text-anchor="middle" font-size="22" font-weight="700" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">60</text>
+<text x="139.5" y="372" text-anchor="middle" font-size="22" font-weight="500" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">07</text>
+<rect x="217.5" y="40" width="90" height="300" rx="5" fill="#A9AF8C"/>
+<text x="262.5" y="26" text-anchor="middle" font-size="22" font-weight="700" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">60</text>
+<text x="262.5" y="372" text-anchor="middle" font-size="22" font-weight="500" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">08</text>
+<rect x="340.5" y="115" width="90" height="225" rx="5" fill="#E4B94A"/>
+<text x="385.5" y="101" text-anchor="middle" font-size="22" font-weight="700" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">45</text>
+<text x="385.5" y="372" text-anchor="middle" font-size="22" font-weight="500" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">09</text>
+<rect x="463.5" y="190" width="90" height="150" rx="5" fill="#E98D3B"/>
+<text x="508.5" y="176" text-anchor="middle" font-size="22" font-weight="700" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">30</text>
+<text x="508.5" y="372" text-anchor="middle" font-size="22" font-weight="500" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">10</text>
+<rect x="586.5" y="40" width="90" height="300" rx="5" fill="none" stroke="#1E1A15" stroke-width="2.6" stroke-dasharray="9 7"/>
+<rect x="586.5" y="265" width="90" height="75" rx="5" fill="#EE6A2C"/>
+<text x="631.5" y="84" text-anchor="middle" font-size="34" font-weight="800" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">?</text>
+<text x="631.5" y="372" text-anchor="middle" font-size="22" font-weight="800" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">11</text>
+<rect x="709.5" y="332" width="90" height="8" rx="4" fill="#5A0E12"/>
+<text x="754.5" y="318" text-anchor="middle" font-size="22" font-weight="700" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">0</text>
+<text x="754.5" y="372" text-anchor="middle" font-size="22" font-weight="500" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">12</text>
+<rect x="832.5" y="40" width="90" height="300" rx="5" fill="url(#hatch)"/>
+<text x="877.5" y="372" text-anchor="middle" font-size="22" font-weight="500" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">13</text>
+<rect x="955.5" y="40" width="90" height="300" rx="5" fill="url(#hatch)"/>
+<text x="1000.5" y="372" text-anchor="middle" font-size="22" font-weight="500" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">14</text>
+<rect x="1078.5" y="40" width="90" height="300" rx="5" fill="url(#hatch)"/>
+<text x="1123.5" y="372" text-anchor="middle" font-size="22" font-weight="500" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">15</text>
+<rect x="1201.5" y="332" width="90" height="8" rx="4" fill="#5A0E12"/>
+<text x="1246.5" y="318" text-anchor="middle" font-size="22" font-weight="700" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">0</text>
+<text x="1246.5" y="372" text-anchor="middle" font-size="22" font-weight="500" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">16</text>
+<rect x="1324.5" y="40" width="90" height="300" rx="5" fill="none" stroke="#1E1A15" stroke-width="2.6" stroke-dasharray="9 7"/>
+<rect x="1324.5" y="265" width="90" height="75" rx="5" fill="#B9231C"/>
+<text x="1369.5" y="84" text-anchor="middle" font-size="34" font-weight="800" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">?</text>
+<text x="1369.5" y="372" text-anchor="middle" font-size="22" font-weight="800" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">17</text>
+<rect x="1447.5" y="190" width="90" height="150" rx="5" fill="#EE6A2C"/>
+<text x="1492.5" y="176" text-anchor="middle" font-size="22" font-weight="700" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">30</text>
+<text x="1492.5" y="372" text-anchor="middle" font-size="22" font-weight="500" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">18</text>
+<rect x="1570.5" y="115" width="90" height="225" rx="5" fill="#E4B94A"/>
+<text x="1615.5" y="101" text-anchor="middle" font-size="22" font-weight="700" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">45</text>
+<text x="1615.5" y="372" text-anchor="middle" font-size="22" font-weight="500" fill="#1E1A15" font-family="Bricolage Grotesque, system-ui, sans-serif">19</text>
+</svg>
+  </figure>
+
+  <div class="legend">
+    <span><i class="sw-heat"></i>Minutes of work per hour; colour is heat</span>
+    <span><i class="sw-ban"></i>Banned by law</span>
+    <span><i class="sw-hand"></i>Supervisor decides</span>
+  </div>
+  <div class="event"><b>turno.aashanjaved.com</b><br>AMD Developer Hackathon: ACT III</div>
+</div>
+</body>
+</html>
