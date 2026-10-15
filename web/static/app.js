@@ -35,12 +35,21 @@ async function init() {
 }
 function fillDays() {
   const s = INDEX.sites.find((x) => x.key === $("#site").value);
-  $("#day").innerHTML = s.days.map((d) => `<option>${d}</option>`).join("");
+  $("#day").innerHTML = `<option value="live">Tomorrow (live forecast)</option>` + s.days.map((d) => `<option>${d}</option>`).join("");
   $("#day").value = s.days[s.days.length - 1];
 }
 async function load() {
   const { site, day } = settings();
-  DOC = await (await fetch(`/data/${site}/${day}.json`)).json();
+  if (day === "live") {
+    $("#context").innerHTML = `<span class="hint">Fetching the latest ECMWF ensemble run...</span>`;
+    const r = await fetch(`/api/live/${site}`);
+    if (!r.ok) { $("#context").innerHTML = `<span class="bad">The live forecast is unavailable right now; pick a replay day.</span>`; return; }
+    DOC = await r.json();
+  } else {
+    DOC = await (await fetch(`/data/${site}/${day}.json`)).json();
+  }
+  document.body.classList.toggle("is-live", !!DOC.live);
+  if (DOC.live) { $("#show-truth").checked = false; document.body.classList.add("hide-truth"); }
   render();
 }
 
@@ -48,14 +57,16 @@ function render() {
   const st = settings();
   PLAN = DOC.plans[`${st.workload}|${st.accl}|${st.alto}`];
   $("#brief").textContent = ""; $("#brief-tag").textContent = "Gemma 4";
-  $("#context").innerHTML = `${esc(DOC.name)}, ${esc(DOC.region)}, ${esc(DOC.work)} site. Replay of <b>${DOC.date}</b>, planned the day before from the ECMWF ensemble run of ${esc(DOC.forecast_init)}. Grid cell ${DOC.cell.lat}, ${DOC.cell.lon}.`;
+  $("#context").innerHTML = DOC.live
+    ? `${esc(DOC.name)}, ${esc(DOC.region)}, ${esc(DOC.work)} site. <b>Live plan for tomorrow, ${DOC.date}</b>, from the ${esc(DOC.forecast_init)}. It has not happened yet, so there is nothing to check it against.`
+    : `${esc(DOC.name)}, ${esc(DOC.region)}, ${esc(DOC.work)} site. Replay of <b>${DOC.date}</b>, planned the day before from the ECMWF ensemble run of ${esc(DOC.forecast_init)}. Grid cell ${DOC.cell.lat}, ${DOC.cell.lon}.`;
   const sm = PLAN.summary;
   $("#s-work").textContent = `${(sm.work_minutes / 60).toFixed(1)} h`;
   $("#s-work-of").textContent = `of ${sm.of_minutes / 60} working hours (07:00 to 19:00)`;
   $("#s-ban").textContent = sm.banned_hours;
   $("#s-hand").textContent = sm.handed_over;
   let over = 0;
-  const truthMin = DOC.truth_minutes[st.workload][st.accl];
+  const truthMin = (DOC.truth_minutes[st.workload] || {})[st.accl] || {};
   const rows = PLAN.hours.map((h) => {
     const hh = String(parseInt(h.hour));
     const tw = DOC.truth_wbgt_by_hour[hh], tm = truthMin[hh];
@@ -86,6 +97,7 @@ function render() {
 }
 
 function value(st, truthMin) {
+  if (DOC.live) { $("#value").innerHTML = `<div><span class="k">Live forecast</span><span class="v">${DOC.date}</span><span class="s">Same ECMWF ensemble, 10 members, same frozen rules as the tested replay days.</span></div>`; return; }
   const hrs = Object.keys(truthMin).map(Number);
   const restricted = hrs.filter((h) => truthMin[h] < 60);
   const outside = restricted.filter((h) => h < 12 || h > 15);

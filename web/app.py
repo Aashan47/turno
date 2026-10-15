@@ -27,6 +27,7 @@ sys.path.insert(0, str(ROOT))
 from turno.briefing import write as write_briefing  # noqa: E402
 from turno.explain import explain  # noqa: E402
 from turno.ordinance_reader import ocr_pdf, read as read_ordinance  # noqa: E402
+from turno.ordinances import load as load_ordinances  # noqa: E402
 
 WEB = Path(__file__).resolve().parent
 CACHE = ROOT / "results" / "live_cache"
@@ -116,6 +117,27 @@ def reread_status(region: str):
         return JSONResponse(job)
     f = CACHE / f"reread-{region}.json"
     return JSONResponse(json.loads(f.read_text()) if f.exists() else {"status": "none", "region": region})
+
+
+_LIVE: dict[str, tuple[float, dict]] = {}
+
+
+@app.get("/api/live/{site}")
+def live(site: str):
+    """Tomorrow's plan from the latest ECMWF ensemble, refreshed at most hourly."""
+    cached = _LIVE.get(site)
+    if cached and time.time() - cached[0] < 3600:
+        return JSONResponse(cached[1])
+    index = json.loads((WEB / "data" / "index.json").read_text())
+    s = next((x for x in index["sites"] if x["key"] == site), None)
+    if not s:
+        raise HTTPException(404, "unknown site")
+    any_day = json.loads((WEB / "data" / site / f"{s['days'][-1]}.json").read_text())
+    from turno.live import tomorrow_doc
+    doc = tomorrow_doc({**s, "site": site, "cell": any_day["cell"], "ordinances": any_day["ordinances"]},
+                       load_ordinances(ROOT / "data" / "ordinances_2026.json"))
+    _LIVE[site] = (time.time(), doc)
+    return JSONResponse(doc)
 
 
 @app.get("/api/health")
