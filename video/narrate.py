@@ -316,15 +316,19 @@ def main() -> None:
     if abs(v - a) > 0.3:
         raise SystemExit(f"muxed streams do not end together: video {v:.2f}s, audio {a:.2f}s")
     print(f"  muxed: video {v:.2f}s, audio {a:.2f}s")
-    # A captioned copy for viewers with the sound off.
-    # The filter parser chokes on the repository path (spaces, quotes), so the
-    # subtitle file is copied to a plain path and the style commas are escaped.
-    import shutil
-    tmp_srt = Path("/tmp/claude_turno_captions.srt")
-    shutil.copyfile(SRT, tmp_srt)
-    style = "FontSize=20,PrimaryColour=&HFFFFFF&,OutlineColour=&H80000000&,Outline=1,Shadow=0,MarginV=36".replace(",", "\\,")
-    ff(["-i", str(VIDEO), "-vf", f"subtitles={tmp_srt}:force_style={style}",
-        "-c:a", "copy", "-crf", "19", "-preset", "slow", "-movflags", "+faststart", str(HERE / "turno-demo-captioned.mp4")])
+    # Captions ship as the SRT sidecar (YouTube takes it under Subtitles). A
+    # burned-in copy is made only when this ffmpeg has the subtitles filter;
+    # the Mac build does not, and the main file is final either way.
+    filters_out = subprocess.run(["ffmpeg", "-hide_banner", "-filters"], capture_output=True, text=True).stdout
+    if any(line.split()[1:2] == ["subtitles"] for line in filters_out.splitlines() if line.strip()):
+        import shutil
+        tmp_srt = Path("/tmp/claude_turno_captions.srt")  # the filter parser chokes on spaces in the repo path
+        shutil.copyfile(SRT, tmp_srt)
+        style = "FontSize=20,PrimaryColour=&HFFFFFF&,OutlineColour=&H80000000&,Outline=1,Shadow=0,MarginV=36".replace(",", "\\,")
+        ff(["-i", str(VIDEO), "-vf", f"subtitles={tmp_srt}:force_style={style}",
+            "-c:a", "copy", "-crf", "19", "-preset", "slow", "-movflags", "+faststart", str(HERE / "turno-demo-captioned.mp4")])
+    else:
+        print("captions: no subtitles filter in this ffmpeg; the SRT sidecar is the deliverable")
     print(f"\n{VIDEO.name} {duration(VIDEO):.1f}s, {fresh} lines synthesised, {len(placed) - fresh} cached; captions in {SRT.name}")
 
 

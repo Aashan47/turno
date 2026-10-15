@@ -1,0 +1,115 @@
+1
+00:00:03,004 --> 00:00:07,442
+This is Turno. Heat-safe shift planning for outdoor crews.
+
+2
+00:00:07,892 --> 00:00:12,698
+Built for the AMD Developer Hackathon, Act three.
+
+3
+00:00:14,598 --> 00:00:22,582
+Every summer, Italian regions ban outdoor work from half past twelve to four, on days the heat is rated high.
+
+4
+00:00:23,032 --> 00:00:29,680
+A site supervisor still has to decide the rest of the day, hour by hour, and prove the ban was kept.
+
+5
+00:00:32,100 --> 00:00:38,599
+Milan, the thirty-first of July. Heavy work, a crew new to the heat.
+
+6
+00:00:39,049 --> 00:00:44,990
+Turno planned this day the day before, one hour of safe work in a thirteen-hour day.
+
+7
+00:00:45,440 --> 00:00:52,399
+And then it checked itself against what actually happened. It allowed too much work in one hour. It says so.
+
+8
+00:00:56,004 --> 00:01:00,569
+The strip is the whole day. Each column is an hour.
+
+9
+00:01:01,019 --> 00:01:11,223
+Height is the minutes of work allowed. Colour is the heat. Above it, the forecast spread, and the black line is what really happened.
+
+10
+00:01:15,355 --> 00:01:24,316
+Nine o'clock, hm. The forecast ran a little cool, so the plan allowed fifteen minutes, and reality allowed none.
+
+11
+00:01:24,766 --> 00:01:31,587
+Turno marks it as too high rather than hiding it. A plan you can audit is worth more than one that looks perfect.
+
+12
+00:01:33,487 --> 00:01:38,614
+Now the supervisor confirms the official rating for the day. High.
+
+13
+00:01:39,064 --> 00:01:46,298
+The law takes over the afternoon. Those hatched blocks are the ban, and no forecast can change them.
+
+14
+00:01:49,340 --> 00:01:54,181
+Two o'clock is banned by the regional ordinance, quoted from its own text.
+
+15
+00:01:56,081 --> 00:02:02,452
+Before the rating is confirmed, those same hours belong to the supervisor.
+
+16
+00:02:02,902 --> 00:02:11,124
+Turno never guesses the official rating. It assumes the ban, and hands the hour to a person, with the reason.
+
+17
+00:02:15,030 --> 00:02:21,137
+A model running on AMD explains the hour, in Italian and in English.
+
+18
+00:02:21,587 --> 00:02:29,302
+Every number it writes is checked against the plan before it is shown. If one is not in the plan, the text is dropped.
+
+19
+00:02:31,202 --> 00:02:34,115
+Gemma four writes the crew briefing from the plan.
+
+20
+00:02:34,565 --> 00:02:41,499
+Same rule. The labels for each hour are fixed by the rules, and every time and number is checked.
+
+21
+00:02:45,106 --> 00:02:51,139
+Regions rewrite these ordinances every summer. This is where AMD does its heaviest work.
+
+22
+00:02:51,589 --> 00:03:00,120
+MinerU reads the region's signed PDF. DeepSeek proposes every field with a quote copied from the text.
+
+23
+00:03:02,020 --> 00:03:05,618
+This re-read ran on AMD just now, while you watched.
+
+24
+00:03:06,068 --> 00:03:14,721
+Code accepts a field only if its quote is really in the document and contains the value. The rest goes to a person.
+
+25
+00:03:16,621 --> 00:03:23,933
+Tomorrow's plan comes from the latest ECMWF ensemble run, the same forecast, the same rules.
+
+26
+00:03:27,540 --> 00:03:33,014
+The dates and the predictions were written down before the test days were scored.
+
+27
+00:03:33,464 --> 00:03:42,943
+On ten summer days the ensemble and the rules missed one percent of heat-restricted hours, against six point six for a single forecast.
+
+28
+00:03:46,442 --> 00:03:52,954
+The models read and explain. The rules decide. The supervisor has the last word.
+
+29
+00:03:53,404 --> 00:03:58,095
+The code, the sources and every number are open.
