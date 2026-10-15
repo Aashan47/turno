@@ -18,7 +18,7 @@ import time
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -145,11 +145,32 @@ def health():
     return {"ok": True}
 
 
-app.mount("/data", StaticFiles(directory=WEB / "data"), name="data")
-app.mount("/evidence", StaticFiles(directory=ROOT / "results"), name="evidence")
-app.mount("/static", StaticFiles(directory=WEB / "static"), name="static")
+class Fresh(StaticFiles):
+    """Static files that proxies and browsers must revalidate. The page links its
+    own assets with a content hash, so a deploy is always a new URL; this header
+    stops a CDN serving yesterday's script against today's page."""
+
+    async def get_response(self, path, scope):
+        r = await super().get_response(path, scope)
+        r.headers["Cache-Control"] = "no-cache, must-revalidate"
+        return r
+
+
+app.mount("/data", Fresh(directory=WEB / "data"), name="data")
+app.mount("/evidence", Fresh(directory=ROOT / "results"), name="evidence")
+app.mount("/static", Fresh(directory=WEB / "static"), name="static")
+
+
+def _asset_version() -> str:
+    h = hashlib.sha256()
+    for name in ("app.js", "style.css"):
+        h.update((WEB / "static" / name).read_bytes())
+    return h.hexdigest()[:10]
 
 
 @app.get("/")
 def index():
-    return FileResponse(WEB / "static" / "index.html")
+    html = (WEB / "static" / "index.html").read_text()
+    v = _asset_version()
+    html = html.replace('/static/style.css"', f'/static/style.css?v={v}"').replace('/static/app.js"', f'/static/app.js?v={v}"')
+    return HTMLResponse(html, headers={"Cache-Control": "no-cache, must-revalidate"})
