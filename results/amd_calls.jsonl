@@ -1,3 +1,8 @@
 {"at": "2026-10-15T16:01:48Z", "task": "smoke", "model": "DeepSeek-V4-Flash", "latency_s": 1.749, "prompt_tokens": 15, "completion_tokens": 6, "cost_usd": 3.78e-06}
 {"at": "2026-10-15T16:04:54Z", "task": "ordinance:Liguria", "model": "DeepSeek-V4-Flash", "latency_s": 60.103, "prompt_tokens": 3574, "completion_tokens": 480, "cost_usd": 0.00063476}
 {"at": "2026-10-15T16:05:20Z", "task": "ordinance:Liguria", "model": "DeepSeek-V4-Flash", "latency_s": 18.7, "prompt_tokens": 3574, "completion_tokens": 438, "cost_usd": 0.0001663984}
+{"at": "2026-10-15T16:06:49Z", "task": "ordinance:Lazio", "model": "DeepSeek-V4-Flash", "latency_s": 58.666, "prompt_tokens": 11965, "completion_tokens": 822, "cost_usd": 0.00190526}
+{"at": "2026-10-15T16:07:15Z", "task": "ordinance:Liguria", "model": "DeepSeek-V4-Flash", "latency_s": 25.662, "prompt_tokens": 3574, "completion_tokens": 448, "cost_usd": 0.0006258}
+{"at": "2026-10-15T16:08:10Z", "task": "ordinance:Lombardia", "model": "DeepSeek-V4-Flash", "latency_s": 23.672, "prompt_tokens": 2922, "completion_tokens": 468, "cost_usd": 0.00054012}
+{"at": "2026-10-15T16:09:31Z", "task": "ordinance:Lazio", "model": "DeepSeek-V4-Flash", "latency_s": 45.14, "prompt_tokens": 11965, "completion_tokens": 805, "cost_usd": 0.0002848328}
+{"at": "2026-10-15T16:09:46Z", "task": "ordinance:Liguria", "model": "DeepSeek-V4-Flash", "latency_s": 14.515, "prompt_tokens": 3574, "completion_tokens": 158, "cost_usd": 8.79984e-05}

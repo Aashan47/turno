@@ -36,3 +36,8 @@ def test_quotes_survive_line_breaks_and_curly_quotes():
 
 def test_missing_value_goes_to_a_person():
     assert not check_field("exemptions", {"value": None, "quote": None}, SRC).accepted
+
+
+def test_a_bare_value_without_a_quote_goes_to_a_person():
+    c = check_field("valid_to", "2026-08-31", SRC)
+    assert not c.accepted and "quote" in c.reason

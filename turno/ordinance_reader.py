@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import re
+import time
 import unicodedata
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -55,12 +56,16 @@ def ocr_pdf(url: str, key: str, pages: str = "0-5") -> str:
     cached = OCR_CACHE / f"{key}.md"
     if cached.exists():
         return cached.read_text()
-    r = httpx.post(
-        f"{BASE_URL}/ocr",
-        headers={"Authorization": f"Bearer {api_key()}"},
-        json={"model": "MinerU2.5-Pro", "document": {"type": "document_url", "document_url": url}, "pages": pages},
-        timeout=900,
-    )
+    for attempt in range(3):
+        r = httpx.post(
+            f"{BASE_URL}/ocr",
+            headers={"Authorization": f"Bearer {api_key()}"},
+            json={"model": "MinerU2.5-Pro", "document": {"type": "document_url", "document_url": url}, "pages": pages},
+            timeout=900,
+        )
+        if r.status_code < 500 and r.status_code != 429:
+            break
+        time.sleep(10 * (attempt + 1))
     r.raise_for_status()
     md = "\n\n".join(p.get("markdown", "") for p in r.json().get("pages", []))
     cached.write_text(md)
@@ -116,7 +121,9 @@ class Reading:
 
 
 def check_field(name: str, item: dict | None, source: str) -> FieldCheck:
-    item = item or {}
+    if not isinstance(item, dict):
+        # A bare value with no quote is a claim the text cannot be checked against.
+        return FieldCheck(name, item, None, False, "no supporting quote given")
     value, quote = item.get("value"), item.get("quote")
     if value in (None, "") or not quote:
         return FieldCheck(name, value, quote, False, "not found in the text")

@@ -40,10 +40,15 @@ def main() -> int:
             continue
         seen.add(region)
         key = region.lower().replace("-", "")
+        saved = ROOT / "sources" / "ordinances" / f"{region.lower()}-2026.txt"
+        text, source = None, "saved primary text"
         if region in OCR_REGIONS and r.get("url", "").startswith("http"):
-            text, source = ocr_pdf(r["url"], key), "MinerU2.5-Pro OCR on AMD of the region's PDF"
-        else:
-            text, source = (ROOT / "sources" / "ordinances" / f"{region.lower()}-2026.txt").read_text(), "saved primary text"
+            try:
+                text, source = ocr_pdf(r["url"], key), "MinerU2.5-Pro OCR on AMD of the region's PDF"
+            except Exception as e:  # reported, never hidden
+                source = f"saved primary text (MinerU failed: {str(e)[:60]})"
+        if text is None:
+            text = saved.read_text()
         rd = read(region, text)
         row = {"region": region, "source": source, "multi_act": region in MULTI_ACT, "model": rd.model,
                "latency_s": rd.latency_s, "cost_usd": rd.cost_usd, "amends_flag": rd.amends, "fields": {}}
