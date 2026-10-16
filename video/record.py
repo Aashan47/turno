@@ -129,6 +129,9 @@ def main() -> None:
         stale.unlink()
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(webm), "-vf", "fps=30,format=yuv420p",
                     "-c:v", "libx264", "-preset", "slow", "-crf", "19", "-movflags", "+faststart", str(OUT)], check=True)
+    # This take is the raw the narrator starts from; a stale raw from an earlier
+    # take would otherwise be copied over the new recording.
+    shutil.copyfile(OUT, HERE / "turno-demo-raw.mp4")
     dur = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(OUT)],
                          capture_output=True, text=True, check=True).stdout.strip()
     print(f"{OUT.name}  {float(dur):.1f}s  {OUT.stat().st_size / 1e6:.1f} MB")
