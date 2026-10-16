@@ -44,15 +44,17 @@ VOICE = os.environ.get("TURNO_TTS_VOICE", "breeze-ref" if BACKEND == "breeze" el
 BREEZE_REF = HERE / "breeze-ref.wav"
 BREEZE_REF_TEXT = ("Every summer, Italian regions ban outdoor work from half past twelve to four, on days the heat is "
                    "rated high. A site supervisor still has to decide the rest of the day.")
-BREEZE_INSTRUCT = ("A calm man in his thirties talking a colleague through a screen. Natural pace, small pauses, "
-                   "relaxed, unhurried.")
+# Aashan on the first Breeze take: too laid back, like talking to a friend; a
+# demo wants clear, professional and focused.
+BREEZE_INSTRUCT = ("A professional male narrator for a product demonstration. Clear, precise and focused. Measured, "
+                   "even pace, neutral and confident tone, every word articulated, no slang, no hesitation.")
 BREEZE_CFG, BREEZE_TRIES, MAX_WER = 4.0, 6, 0.12
 TEMPO = float(os.environ.get("TURNO_TTS_TEMPO", "1.0"))  # the directed read already sits near documentary pace
 STYLE = ("Read this as a site engineer calmly walking a colleague through a screen they are both looking at. "
          "Natural, unhurried, conversational. Breathe between sentences. Where a line has a pause marked with "
          "three dots, pause briefly as if thinking. State facts plainly; never sell.")
 
-VOICE_LUFS, MUSIC_LUFS = -16.0, -34.0
+VOICE_LUFS, MUSIC_LUFS = -16.0, -42.0  # 26 dB under the voice: at 18 dB Aashan heard it as too loud
 BREATH = 0.45
 PAUSE_KEEP = 0.9
 # A gap up to 4.5 s is allowed between beats: those seconds are the scene scrolling
@@ -66,17 +68,17 @@ MUSIC = Path("/Users/aashanjaved/Desktop/Drive -D - Aashan/Research Assistant/Ha
 CUES = [
     ("title", "This is Turno. Heat-safe shift planning for outdoor crews."),
 
-    ("open", "Every summer, Italian regions ban outdoor work from half past twelve to four... on days the heat is rated high."),
+    ("open", "Every summer, Italian regions ban outdoor work from half past twelve to four, on days the heat is rated high."),
     ("open", "A site supervisor still has to decide the rest of the day, hour by hour, and prove the ban was kept."),
 
     ("verdict", "Milan, the thirty-first of July. Heavy work, a crew new to the heat."),
-    ("verdict", "Turno planned this day the day before... one hour of safe work in a thirteen-hour day."),
+    ("verdict", "Turno planned this day the day before: one hour of safe work in a thirteen-hour day."),
     ("verdict", "And then it checked itself against what actually happened. It allowed too much work in one hour. It says so."),
 
     ("strip", "The strip is the whole day. Each column is an hour."),
     ("strip", "Height is the minutes of work allowed. Colour is the heat. Above it, the forecast spread, and the black line is what really happened."),
 
-    ("toohigh", "Nine o'clock... hmm. The forecast ran a little cool, so the plan allowed fifteen minutes, and reality allowed none."),
+    ("toohigh", "Nine o'clock. The forecast ran a little cool, so the plan allowed fifteen minutes, and reality allowed none."),
     ("toohigh", "Turno marks it as too high rather than hiding it. A plan you can audit is worth more than one that looks perfect."),
 
     ("alto", "Now the supervisor confirms the official rating for the day. High."),
@@ -85,7 +87,7 @@ CUES = [
     ("banned", "Two o'clock is banned by the regional ordinance, quoted from its own text."),
 
     ("decide", "Before the rating is confirmed, those same hours belong to the supervisor."),
-    ("decide", "Turno never guesses the official rating. It assumes the ban, and hands the hour to a person... with the reason."),
+    ("decide", "Turno never guesses the official rating. It assumes the ban, and hands the hour to a person, with the reason."),
 
     ("explain", "The model on AMD explains the hour, in Italian and in English."),
     ("explain", "Every number it writes is checked against the plan before it is shown. If one is not in the plan, the text is dropped."),
@@ -99,7 +101,7 @@ CUES = [
     ("reread", "This re-read ran on AMD just now, while you watched."),
     ("reread", "Code accepts a field only if its quote is really in the document and contains the value. The rest goes to a person."),
 
-    ("live", "Tomorrow's plan comes from the latest ECMWF ensemble run... the same forecast, the same rules."),
+    ("live", "Tomorrow's plan comes from the latest E.C.M.W.F. ensemble run: the same forecast, the same rules."),
 
     ("evidence", "The dates and the predictions were written down before the test days were scored."),
     ("evidence", "On ten summer days the ensemble and the rules missed one percent of heat-restricted hours, against six point six for a single forecast."),
@@ -144,7 +146,7 @@ def loudness(path: Path, seconds: float | None = None) -> float:
 
 def clip_path(text: str) -> Path:
     ref = hashlib.sha256(BREEZE_REF.read_bytes()).hexdigest()[:8] if BACKEND == "breeze" else ""
-    key = hashlib.sha256(f"{BACKEND}|{MODEL}|{VOICE}|{ref}|{TEMPO}|{PAUSE_KEEP}|{STYLE}|{text}".encode()).hexdigest()[:16]
+    key = hashlib.sha256(f"{BACKEND}|{MODEL}|{VOICE}|{ref}|{BREEZE_INSTRUCT if BACKEND == 'breeze' else STYLE}|{TEMPO}|{PAUSE_KEEP}|{text}".encode()).hexdigest()[:16]
     return CLIPS / f"{key}.wav"
 
 
@@ -185,7 +187,18 @@ def words_of(text: str, hyphen: str = " ") -> list[str]:
     t = re.sub(r"(\d+)(st|nd|rd|th)\b", lambda m: _ordinal(int(m.group(1))), t)
     t = re.sub(r"(\d+)\.(\d+)", lambda m: f"{_num_words(int(m.group(1)))} point {' '.join(_ONES[int(c)] for c in m.group(2))}", t)
     t = re.sub(r"\d+", lambda m: _num_words(int(m.group(0))), t)
-    return re.findall(r"[a-z']+", t)
+    # An initialism is written "E.C.M.W.F." so the voice spells it; the
+    # transcriber may write it joined or spaced, so single letters are joined.
+    toks, out, run = re.findall(r"[a-z']+", t), [], []
+    for w in toks + [""]:
+        if len(w) == 1 and w != "a":
+            run.append(w)
+            continue
+        if run:
+            out.append("".join(run) if len(run) > 1 else run[0]); run = []
+        if w:
+            out.append(w)
+    return out
 
 
 def wer(said: str, wanted: str) -> float:
