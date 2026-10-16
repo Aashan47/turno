@@ -104,16 +104,16 @@
       await waitFor(() => /ENGLISH/.test($("#brief").textContent), 90000);
       await scrollTo($("#brief"), "center");
       window.__demoFacts.briefTag = $("#brief-tag").textContent;
-      mark("briefing"); await sleep(13000);
+      mark("briefing"); await sleep(14500);
 
       // The ordinance, read on AMD.
       await scrollTo($("#amd-section"), "start");
       mark("law"); await sleep(17000);
       await click($("#btn-reread"));
-      await waitFor(() => /Live re-read/.test($("#reread").textContent) || /failed|unchanged/.test($("#reread").textContent), 240000);
+      await waitFor(() => /Live re-read/.test($("#reread").textContent) || /failed|unchanged/.test($("#reread").textContent), 300000);
       if (!/Live re-read/.test($("#reread").textContent)) {  // AMD's OCR answers 502 now and then: one more try
         await sleep(4000); await click($("#btn-reread"));
-        await waitFor(() => /Live re-read/.test($("#reread").textContent) || /failed|unchanged/.test($("#reread").textContent), 240000);
+        await waitFor(() => /Live re-read/.test($("#reread").textContent) || /failed|unchanged/.test($("#reread").textContent), 300000);
       }
       await scrollTo($("#reread"), "center");
       window.__demoFacts.reread = $("#reread").textContent.slice(0, 160);
@@ -129,7 +129,7 @@
       // The evidence.
       const ev = $("#evidence details"); ev.open = true;
       await scrollTo($("#evidence"), "start");
-      mark("evidence"); await sleep(18000);
+      mark("evidence"); await sleep(22500);
 
       // Closing slate.
       showSlate(`<div style="font-size:64px;font-weight:800;letter-spacing:-.02em;line-height:1.05;max-width:22ch">The models read and explain. The rules decide. The supervisor has the last word.</div>

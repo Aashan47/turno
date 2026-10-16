@@ -56,13 +56,23 @@ def ocr_pdf(url: str, key: str, pages: str = "0-5") -> str:
     cached = OCR_CACHE / f"{key}.md"
     if cached.exists():
         return cached.read_text()
+    # AMD's OCR answers in 30 to 120 s, and now and then a call hangs with no
+    # answer at all (one hung for 15 minutes on 16 Oct). A hung call is given up
+    # after 150 s and retried, like a 502; three attempts in all.
+    r = None
     for attempt in range(3):
-        r = httpx.post(
-            f"{BASE_URL}/ocr",
-            headers={"Authorization": f"Bearer {api_key()}"},
-            json={"model": "MinerU2.5-Pro", "document": {"type": "document_url", "document_url": url}, "pages": pages},
-            timeout=900,
-        )
+        try:
+            r = httpx.post(
+                f"{BASE_URL}/ocr",
+                headers={"Authorization": f"Bearer {api_key()}"},
+                json={"model": "MinerU2.5-Pro", "document": {"type": "document_url", "document_url": url}, "pages": pages},
+                timeout=httpx.Timeout(150.0, connect=30.0),
+            )
+        except httpx.TimeoutException:
+            if attempt == 2:
+                raise
+            time.sleep(5)
+            continue
         if r.status_code < 500 and r.status_code != 429:
             break
         time.sleep(10 * (attempt + 1))

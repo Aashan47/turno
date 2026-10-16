@@ -46,7 +46,7 @@ BREEZE_REF_TEXT = ("Every summer, Italian regions ban outdoor work from half pas
                    "rated high. A site supervisor still has to decide the rest of the day.")
 BREEZE_INSTRUCT = ("A calm man in his thirties talking a colleague through a screen. Natural pace, small pauses, "
                    "relaxed, unhurried.")
-BREEZE_CFG, BREEZE_TRIES, MAX_WER = 4.0, 4, 0.12
+BREEZE_CFG, BREEZE_TRIES, MAX_WER = 4.0, 6, 0.12
 TEMPO = float(os.environ.get("TURNO_TTS_TEMPO", "1.0"))  # the directed read already sits near documentary pace
 STYLE = ("Read this as a site engineer calmly walking a colleague through a screen they are both looking at. "
          "Natural, unhurried, conversational. Breathe between sentences. Where a line has a pause marked with "
@@ -87,7 +87,7 @@ CUES = [
     ("decide", "Before the rating is confirmed, those same hours belong to the supervisor."),
     ("decide", "Turno never guesses the official rating. It assumes the ban, and hands the hour to a person... with the reason."),
 
-    ("explain", "A model running on AMD explains the hour, in Italian and in English."),
+    ("explain", "The model on AMD explains the hour, in Italian and in English."),
     ("explain", "Every number it writes is checked against the plan before it is shown. If one is not in the plan, the text is dropped."),
 
     ("briefing", "Gemma four writes the crew briefing from the plan."),
@@ -179,9 +179,9 @@ def _ordinal(n: int) -> str:
     return " ".join(w)
 
 
-def words_of(text: str) -> list[str]:
+def words_of(text: str, hyphen: str = " ") -> list[str]:
     """Spoken-word tokens: digits as words, so "15" and "fifteen" compare equal."""
-    t = text.lower().replace("%", " percent ").replace("-", " ")
+    t = text.lower().replace("%", " percent ").replace("-", hyphen)
     t = re.sub(r"(\d+)(st|nd|rd|th)\b", lambda m: _ordinal(int(m.group(1))), t)
     t = re.sub(r"(\d+)\.(\d+)", lambda m: f"{_num_words(int(m.group(1)))} point {' '.join(_ONES[int(c)] for c in m.group(2))}", t)
     t = re.sub(r"\d+", lambda m: _num_words(int(m.group(0))), t)
@@ -190,9 +190,14 @@ def words_of(text: str) -> list[str]:
 
 def wer(said: str, wanted: str) -> float:
     import difflib
-    a, b = words_of(wanted), words_of(said)
-    matched = sum(bl.size for bl in difflib.SequenceMatcher(None, a, b).get_matching_blocks())
-    return (len(a) + len(b) - 2 * matched) / max(1, len(a))
+    # A hyphenated word is one spoken word or two ("re-read", "thirteen-hour"):
+    # whichever way the transcriber wrote it, it must not count as an error.
+    best = 9.9
+    for hyphen in (" ", ""):
+        a, b = words_of(wanted, hyphen), words_of(said, hyphen)
+        matched = sum(bl.size for bl in difflib.SequenceMatcher(None, a, b).get_matching_blocks())
+        best = min(best, (len(a) + len(b) - 2 * matched) / max(1, len(a)))
+    return best
 
 
 _breeze = None
