@@ -4,5 +4,9 @@ version = "0.1.0"
 requires-python = "~=3.12.0"
 dependencies = ["thermofeel==2.3.0", "numpy", "xarray", "netCDF4", "cdsapi", "httpx", "dask", "cfgrib", "eccodes", "zarr", "gcsfs", "fastapi", "uvicorn"]
 
+[tool.setuptools]
+# Only the library is a package; web/, video/ and scripts/ are run in place.
+packages = ["turno"]
+
 [tool.pytest.ini_options]
 pythonpath = ["."]

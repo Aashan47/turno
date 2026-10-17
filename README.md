@@ -100,7 +100,7 @@ direct-diffuse split costs 0.15 to 0.20 C of WBGT on average, 1.06 C at worst.
 
 ```
 uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -e . pytest
-.venv/bin/python -m pytest -q                      # 64 tests, no network
+.venv/bin/python -m pytest -q                      # 66 tests, no network
 .venv/bin/python -m uvicorn web.app:app --port 8765 # the app on http://localhost:8765
 ```
 
