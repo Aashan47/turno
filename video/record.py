@@ -82,7 +82,24 @@ def preflight() -> None:
     ocr_cache.unlink(missing_ok=True)
 
 
-def record() -> Path:
+def line_timing() -> tuple[dict, float]:
+    """Seconds of every narration line, by beat, from the cached voice clips.
+    The scene paces the pointer to the lines and holds each beat for exactly
+    as long as its lines need, so the picture and the voice are built from
+    the same numbers."""
+    import sys
+    sys.path.insert(0, str(HERE))
+    import narrate
+    timing: dict[str, list[float]] = {}
+    for beat, text in narrate.CUES:
+        clip = narrate.clip_path(text)
+        if not clip.exists():
+            raise SystemExit(f"no voice clip yet for: {text[:60]}  (run video/synth_all.py first)")
+        timing.setdefault(beat, []).append(round(narrate.duration(clip), 3))
+    return timing, narrate.BREATH
+
+
+def record(timing: dict, breath: float) -> Path:
     shutil.rmtree(RAW, ignore_errors=True)
     RAW.mkdir(parents=True)
     problems: list[str] = []
@@ -98,7 +115,7 @@ def record() -> Path:
         page.wait_for_function("typeof window.__demoPlay === 'function'", timeout=15000)
         page.wait_for_function("document.querySelectorAll('#strip .col').length > 5", timeout=20000)
         lead_in = page.evaluate("performance.now()") / 1000.0
-        page.evaluate("window.__demoPlay()")
+        page.evaluate("([t, b]) => window.__demoPlay(t, b)", [timing, breath])
         page.wait_for_function("window.__demoDone === true", timeout=600_000)
         err = page.evaluate("window.__demoError || null")
         marks = page.evaluate("window.__demoMarks")
@@ -122,8 +139,10 @@ def record() -> Path:
 
 
 def main() -> None:
+    timing, breath = line_timing()
+    print("narration lines:", {b: len(v) for b, v in timing.items()}, flush=True)
     preflight()
-    webm = record()
+    webm = record(timing, breath)
     stale = HERE / "narration.m4a"
     if stale.exists():
         stale.unlink()
