@@ -28,7 +28,13 @@ import numpy as np
 import xarray as xr
 
 ROOT = Path(__file__).resolve().parent.parent
-BASE = "https://ecmwf-forecasts.s3.eu-central-1.amazonaws.com"
+# The same ECMWF open-data files are mirrored on AWS and Google Cloud. AWS throttles bursts
+# heavily; the Google mirror served the Pakistan run.
+MIRRORS = {
+    "aws": "https://ecmwf-forecasts.s3.eu-central-1.amazonaws.com",
+    "gcs": "https://storage.googleapis.com/ecmwf-open-data",
+}
+BASE = MIRRORS["aws"]
 PARAMS = ["2t", "2d", "10u", "10v", "sp", "ssrd"]
 # Same boxes as the ERA5 downloads: north, west, south, east.
 BOXES = {
@@ -76,9 +82,14 @@ def main() -> int:
     ap.add_argument("--max-step", type=int, default=120)
     ap.add_argument("--step-every", type=int, default=3)
     ap.add_argument("--region", choices=sorted(BOXES), default="italy")
+    ap.add_argument("--mirror", choices=sorted(MIRRORS), default="aws")
+    ap.add_argument("--work-hours-utc", default="",
+                    help="e.g. 3,6,9,12: fetch only the steps scored at these UTC hours, plus ssrd one "
+                         "window earlier; every other field is stored as NaN and never scored")
     a = ap.parse_args()
-    global NORTH, WEST, SOUTH, EAST
+    global NORTH, WEST, SOUTH, EAST, BASE
     NORTH, WEST, SOUTH, EAST = BOXES[a.region]
+    BASE = MIRRORS[a.mirror]
 
     ymd = a.date.replace("-", "")
     kind = "fc" if a.stream == "oper" else "ef"
@@ -90,6 +101,17 @@ def main() -> int:
     out.parent.mkdir(parents=True, exist_ok=True)
 
     steps = list(range(a.step_every, a.max_step + 1, a.step_every))
+    # Which params each step needs. score_grid.py reads a step's instantaneous fields and the ssrd
+    # accumulation at that step and one window earlier, so nothing it scores is left out.
+    need = {s: set(PARAMS) for s in steps}
+    if a.work_hours_utc:
+        hours = {int(h) for h in a.work_hours_utc.split(",")}
+        scored = [s for s in steps if s % 24 in hours]
+        need = {s: set(PARAMS) for s in scored}
+        for s in scored:
+            if s - a.step_every > 0:
+                need.setdefault(s - a.step_every, set()).add("ssrd")
+        steps = sorted(need)
     fields: dict[str, list] = {p: [] for p in PARAMS}
     with httpx.Client(timeout=120) as client:
         for step in steps:
@@ -97,6 +119,9 @@ def main() -> int:
             index = [json.loads(line) for line in get(client, stem + ".index").decode().splitlines()
                      if line.startswith("{")]
             for p in PARAMS:
+                if p not in need[step]:
+                    fields[p].append(None)
+                    continue
                 recs = [r for r in index if r.get("param") == p and r.get("levtype") == "sfc"]
                 if a.stream == "enfo":
                     recs = [r for r in recs if r.get("type") == "pf" and int(r.get("number", 0)) <= a.members]
@@ -109,11 +134,15 @@ def main() -> int:
             print(f"{a.stream} {ymd} step {step}h done", flush=True)
             lat, lon = da.latitude.values, da.longitude.values
 
+    shape = next(f for f in fields["ssrd"] if f is not None).shape
+    for p in PARAMS:
+        fields[p] = [np.full(shape, np.nan) if f is None else f for f in fields[p]]
     ds = xr.Dataset(
         {p: (("step", "member", "latitude", "longitude"), np.stack(fields[p])) for p in PARAMS},
         coords={"step": steps, "latitude": lat, "longitude": lon},
         attrs={
-            "source": "ECMWF open data on AWS, CC BY 4.0",
+            "source": f"ECMWF open data ({a.mirror} mirror), CC BY 4.0",
+            "work_hours_utc": a.work_hours_utc or "all",
             "init": f"{a.date}T00:00Z",
             "stream": a.stream,
             "region": a.region,

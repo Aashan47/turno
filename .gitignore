@@ -25,3 +25,4 @@ video/voice/
 video/voice-trial/
 data/ecmwf_pk/
 results/pk/grid_scores.jsonl
+data/ecmwf_pk_full/
