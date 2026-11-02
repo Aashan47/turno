@@ -19,8 +19,9 @@ pass and fail are computed by that code against the thresholds in `PREREGISTRATI
   a miss is a time where the plan allowed more minutes than the truth. That makes it a test of the minutes,
   and a weaker test of the decision than Italy, where many times were unrestricted.
 - **The counts are small and not independent.** Lead-1 misses are 13 (ENS) and 17 (IFS) of 340 times; the
-  340 times share 17 dates and five nearby sites, so a single hot spell moves several at once. The lead-1
-  failure and the lead-2 and lead-3 passes are all within what a few days' weather could change.
+  340 times share 17 dates and five nearby sites, so a single hot spell moves several at once. No interval
+  was pre-registered or computed, so the lead-1 failure and the lead-2 and lead-3 passes are small-sample
+  results in both directions.
 - **Forecasts ran cooler than ERA5 at every lead** (bias -0.15 to -0.54 C), most at lead 1.
 - **Arms reported without a prediction** (acclimatized limit, moderate work) all show the ensemble missing
   fewer times than the single forecast at every lead, with hand-off rates up to 21.8% (moderate, REL, lead 5).
