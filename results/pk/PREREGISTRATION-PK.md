@@ -107,9 +107,11 @@ Wind and both radiation fields were identical; the largest differences were 0.00
 dewpoint and 0.0625 Pa for surface pressure, which is float rounding.
 
 **Only the fields the truth reads are downloaded.** The truth at a scored time uses temperature, dewpoint,
-pressure and wind at that hour and radiation over the three hours before it. So for every day from 1 May
-to 31 August 2026, the script fetches 03, 06, 09 and 12 UTC for the first five and 01 to 12 UTC for the two
-radiation fields; every other hour is stored as missing and is never scored. Days are not selected.
+pressure and wind at that hour and radiation over the three hours ending at it. So for every day from 1 May
+to 31 August 2026, the script fetches hours 01 to 12 UTC of those seven fields, which covers every scored
+time (03, 06, 09, 12 UTC) and its radiation window inside the same day; hours 13 to 00 UTC are not stored and
+are never scored. Days are not selected. The scoring code is unchanged; only the file pattern it reads
+(`era5_pk_arco_2026*.nc`) is new, so a Copernicus file arriving later cannot mix into the truth.
 
 **Nothing else changes:** sites, dates, leads, rules, limits, measures and predictions are as above.
 

@@ -45,7 +45,7 @@ WORK_HOURS_UTC = {6, 9, 12, 15}
 REGIONS = {
     "italy": {"era5": "era5_italy_2026*.nc", "lsm": "era5_italy_lsm.nc", "work_hours": WORK_HOURS_UTC,
               "workloads": ("heavy",), "out": "grid_scores.jsonl"},
-    "pk": {"era5": "era5_pk_2026*.nc", "lsm": "era5_pk_lsm.nc", "work_hours": {3, 6, 9, 12},
+    "pk": {"era5": "era5_pk_arco_2026*.nc", "lsm": "era5_pk_lsm.nc", "work_hours": {3, 6, 9, 12},
            "workloads": ("heavy", "moderate"), "out": "pk/grid_scores.jsonl"},
 }
 
