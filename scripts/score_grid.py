@@ -12,6 +12,8 @@ gives it no advantage. The direct fraction comes from the Erbs split for every
 forecast arm; the truth uses ERA5's own.
 
 Usage: score_grid.py data/ecmwf/oper_2026073000.nc [more files ...]
+       score_grid.py --region pk data/ecmwf_pk/oper_2026050600.nc [...]
+       (Pakistan: results/pk/PREREGISTRATION-PK.md; writes results/pk/grid_scores.jsonl)
 """
 
 from __future__ import annotations
@@ -29,7 +31,6 @@ sys.path.insert(0, str(ROOT))
 
 from turno.evaluate import decision_score, wbgt_score  # noqa: E402
 from turno.grid import load_lsm, nearest_land_cell  # noqa: E402
-from turno.sites import SITES  # noqa: E402
 from turno.solar import cos_zenith_hour_mean, direct_fraction, toa_hour_mean  # noqa: E402
 from turno.wbgt import WbgtInputs, wbgt_c  # noqa: E402
 
@@ -39,6 +40,14 @@ WINDOW_H = 3
 # times inside it are 06, 09, 12 and 15 UTC, i.e. 08, 11, 14 and 17 local.
 # Every decision metric, including the hand-off rate, is over these times only.
 WORK_HOURS_UTC = {6, 9, 12, 15}
+
+# Pakistan (UTC+5): the same local times, 08, 11, 14 and 17, are 03, 06, 09 and 12 UTC.
+REGIONS = {
+    "italy": {"era5": "era5_italy_2026*.nc", "lsm": "era5_italy_lsm.nc", "work_hours": WORK_HOURS_UTC,
+              "workloads": ("heavy",), "out": "grid_scores.jsonl"},
+    "pk": {"era5": "era5_pk_2026*.nc", "lsm": "era5_pk_lsm.nc", "work_hours": {3, 6, 9, 12},
+           "workloads": ("heavy", "moderate"), "out": "pk/grid_scores.jsonl"},
+}
 
 
 def mean_over_window(fn, t_end: datetime, lat: float, lon: float) -> float:
@@ -91,7 +100,8 @@ def arm_members(fc: xr.Dataset, init: datetime, lat: float, lon: float) -> dict[
     return out
 
 
-def score_files(paths, truth, cells, plan_quantile: float, handover_steps: int) -> list[dict]:
+def score_files(paths, truth, cells, plan_quantile: float, handover_steps: int,
+                work_hours=WORK_HOURS_UTC, workloads=("heavy",)) -> list[dict]:
     rows = []
     for p in paths:
         fc = xr.open_dataset(p)
@@ -102,33 +112,42 @@ def score_files(paths, truth, cells, plan_quantile: float, handover_steps: int) 
             for lead in range(1, 6):
                 lo, hi = init + timedelta(days=lead - 1), init + timedelta(days=lead)
                 ts = [t for t in sorted(members)
-                      if lo < t <= hi and t in truth[key] and t.hour in WORK_HOURS_UTC]
+                      if lo < t <= hi and t in truth[key] and t.hour in work_hours]
                 if not ts:
                     continue
                 med = [float(np.median(members[t])) for t in ts]
                 tr = [truth[key][t] for t in ts]
                 w = wbgt_score(med, tr)
-                for accl in (True, False):
-                    d = decision_score([members[t] for t in ts], tr, "heavy", accl,
-                                       plan_quantile=plan_quantile, handover_steps=handover_steps)
-                    rows.append({"file": Path(p).name, "arm": arm, "init": init.date().isoformat(),
-                                 "site": key, "lead_days": lead, "acclimatized": accl, "n": w.n,
-                                 "mae_c": w.mae_c, "bias_c": w.bias_c,
-                                 "restricted": d.restricted_truth, "missed": d.missed,
-                                 "false_restrictions": d.false_restrictions,
-                                 "handed_over": d.handed_to_supervisor, "hours": d.hours,
-                                 "minutes_over": d.minutes_over_truth, "minutes_under": d.minutes_under_truth,
-                                 "plan_quantile": plan_quantile, "handover_steps": handover_steps})
+                for workload in workloads:
+                    for accl in (True, False):
+                        d = decision_score([members[t] for t in ts], tr, workload, accl,
+                                           plan_quantile=plan_quantile, handover_steps=handover_steps)
+                        row = {"file": Path(p).name, "arm": arm, "init": init.date().isoformat(),
+                               "site": key, "lead_days": lead, "acclimatized": accl, "n": w.n,
+                               "mae_c": w.mae_c, "bias_c": w.bias_c,
+                               "restricted": d.restricted_truth, "missed": d.missed,
+                               "false_restrictions": d.false_restrictions,
+                               "handed_over": d.handed_to_supervisor, "hours": d.hours,
+                               "minutes_over": d.minutes_over_truth, "minutes_under": d.minutes_under_truth,
+                               "plan_quantile": plan_quantile, "handover_steps": handover_steps}
+                        if len(workloads) > 1:
+                            row["workload"] = workload
+                        rows.append(row)
     return rows
 
 
-def load_truth():
-    era = sorted((ROOT / "data" / "era5").glob("era5_italy_2026*.nc"))
+def load_truth(region: str = "italy"):
+    cfg = REGIONS[region]
+    if region == "italy":
+        from turno.sites import SITES as sites
+    else:
+        from turno.sites_pk import SITES as sites
+    era = sorted((ROOT / "data" / "era5").glob(cfg["era5"]))
     ds = xr.open_mfdataset(era, combine="by_coords")
     if "valid_time" in ds.dims:
         ds = ds.rename({"valid_time": "time"})
-    lsm = load_lsm(ROOT / "data" / "era5" / "era5_italy_lsm.nc")
-    cells = {s.key: nearest_land_cell(lsm, s.lat, s.lon)[:2] for s in SITES}
+    lsm = load_lsm(ROOT / "data" / "era5" / cfg["lsm"])
+    cells = {s.key: nearest_land_cell(lsm, s.lat, s.lon)[:2] for s in sites}
     truth = {k: era5_truth(ds, *c) for k, c in cells.items()}
     return truth, cells
 
@@ -136,9 +155,15 @@ def load_truth():
 def main(paths: list[str]) -> int:
     from turno.rules import HANDOVER_STEPS, PLAN_QUANTILE
 
-    truth, cells = load_truth()
-    rows = score_files(paths, truth, cells, PLAN_QUANTILE, HANDOVER_STEPS)
-    out = ROOT / "results" / "grid_scores.jsonl"
+    region = "italy"
+    if paths and paths[0] == "--region":
+        region, paths = paths[1], paths[2:]
+    cfg = REGIONS[region]
+    truth, cells = load_truth(region)
+    rows = score_files(paths, truth, cells, PLAN_QUANTILE, HANDOVER_STEPS,
+                       work_hours=cfg["work_hours"], workloads=cfg["workloads"])
+    out = ROOT / "results" / cfg["out"]
+    out.parent.mkdir(parents=True, exist_ok=True)
     with out.open("a") as f:
         for r in rows:
             f.write(json.dumps(r) + "\n")

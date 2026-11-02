@@ -1,4 +1,4 @@
-"""Fetch ECMWF open-data forecasts (IFS and ENS) on the 0.25 degree grid, cropped to Italy.
+"""Fetch ECMWF open-data forecasts (IFS and ENS) on the 0.25 degree grid, cropped to a region (Italy by default).
 
 These are the like-for-like baselines for Aurora: same grid, same cells, same
 rules. Source: ECMWF open data on AWS (s3://ecmwf-forecasts), CC BY 4.0.
@@ -11,6 +11,7 @@ bandwidth; the number used is recorded in the output.
 Usage:
   fetch_ecmwf_open.py 2026-07-30 --stream oper
   fetch_ecmwf_open.py 2026-07-30 --stream enfo --members 10 --max-step 120
+  fetch_ecmwf_open.py 2026-05-06 --stream enfo --region pk   (writes to data/ecmwf_pk/)
 """
 
 from __future__ import annotations
@@ -29,8 +30,12 @@ import xarray as xr
 ROOT = Path(__file__).resolve().parent.parent
 BASE = "https://ecmwf-forecasts.s3.eu-central-1.amazonaws.com"
 PARAMS = ["2t", "2d", "10u", "10v", "sp", "ssrd"]
-# Same box as the ERA5 download: north, west, south, east.
-NORTH, WEST, SOUTH, EAST = 47.5, 6.0, 36.0, 19.0
+# Same boxes as the ERA5 downloads: north, west, south, east.
+BOXES = {
+    "italy": (47.5, 6.0, 36.0, 19.0),
+    "pk": (32.5, 66.0, 23.5, 75.5),  # Karachi to Lahore, results/pk/PREREGISTRATION-PK.md
+}
+NORTH, WEST, SOUTH, EAST = BOXES["italy"]
 
 
 # AWS throttles bursts on this public bucket ("SlowDown"). A short pause between
@@ -70,11 +75,15 @@ def main() -> int:
     ap.add_argument("--members", type=int, default=10)
     ap.add_argument("--max-step", type=int, default=120)
     ap.add_argument("--step-every", type=int, default=3)
+    ap.add_argument("--region", choices=sorted(BOXES), default="italy")
     a = ap.parse_args()
+    global NORTH, WEST, SOUTH, EAST
+    NORTH, WEST, SOUTH, EAST = BOXES[a.region]
 
     ymd = a.date.replace("-", "")
     kind = "fc" if a.stream == "oper" else "ef"
-    out = ROOT / "data" / "ecmwf" / f"{a.stream}_{ymd}00.nc"
+    folder = "ecmwf" if a.region == "italy" else f"ecmwf_{a.region}"
+    out = ROOT / "data" / folder / f"{a.stream}_{ymd}00.nc"
     if out.exists():
         print(f"skip {out.name}")
         return 0
@@ -107,6 +116,7 @@ def main() -> int:
             "source": "ECMWF open data on AWS, CC BY 4.0",
             "init": f"{a.date}T00:00Z",
             "stream": a.stream,
+            "region": a.region,
             "members": a.members if a.stream == "enfo" else 1,
             "ssrd": "accumulated J m-2 since step 0, as ECMWF publishes it",
         },
