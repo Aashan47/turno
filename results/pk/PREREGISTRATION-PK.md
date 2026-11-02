@@ -87,3 +87,31 @@ per-site results, and the share of working times that were heat-restricted in ER
 - ECMWF open data is 3-hourly; scoring uses 3-hourly times.
 - This tests forecasts and rules against a reanalysis. It says nothing about whether workers or employers
   will use the plan, or whether it reduces heat illness.
+
+## Amendment 1, 2 November 2026, 6:40 PM PKT: where the ERA5 truth is downloaded from
+
+Written before any Pakistan ERA5 temperature, humidity, pressure, wind or radiation value has been downloaded
+or opened. Only the land-sea mask, which picks each site's cell, came from the Copernicus Climate Data Store,
+and that is unchanged.
+
+**What changed.** The Copernicus request for May 2026 was accepted at 3:10 PM PKT and had not started 3 hours
+30 minutes later; the store allows two queued requests per dataset, so June to August wait behind it. The
+truth fields now come from Google's public copy of ERA5 (ARCO-ERA5,
+`gs://gcp-public-data-arco-era5/ar/full_37-1h-0p25deg-chunk-1.zarr-v3`), which holds the same ECMWF ERA5
+fields on the same 0.25 degree grid: final ERA5 to 30 June 2026 and the preliminary ERA5T after it, as the
+Copernicus store also serves for July and August.
+
+**Equivalence, checked on data already downloaded from Copernicus for Italy.** For 15 June, 15 July and
+20 August 2026, hours 01 to 12 UTC, over the whole Italy box, the two sources were compared field by field.
+Wind and both radiation fields were identical; the largest differences were 0.00024 K for temperature and
+dewpoint and 0.0625 Pa for surface pressure, which is float rounding.
+
+**Only the fields the truth reads are downloaded.** The truth at a scored time uses temperature, dewpoint,
+pressure and wind at that hour and radiation over the three hours before it. So for every day from 1 May
+to 31 August 2026, the script fetches 03, 06, 09 and 12 UTC for the first five and 01 to 12 UTC for the two
+radiation fields; every other hour is stored as missing and is never scored. Days are not selected.
+
+**Nothing else changes:** sites, dates, leads, rules, limits, measures and predictions are as above.
+
+**Cross-check.** The Copernicus request is left running. If it completes, its Pakistan fields are compared
+with the Google copy and the result is reported with the scores.
